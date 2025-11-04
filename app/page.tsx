@@ -1,0 +1,167 @@
+'use client'
+
+import { useState, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
+import { Bell, ChevronRight, Sun, Moon } from 'lucide-react'
+import ActionButton from './components/ActionButton'
+import BalanceCard from './components/BalanceCard'
+import PriceChart from './components/PriceChart'
+import LionLogoTransparent from './components/LionLogoTransparent'
+import Header, { MenuButton } from '../components/ui/curved-menu'
+import { useTheme } from '../contexts/ThemeContext'
+
+export default function WalletScreen() {
+  const router = useRouter()
+  const { isDarkMode, toggleDarkMode } = useTheme()
+  const [isMenuActive, setIsMenuActive] = useState(false)
+  
+  // Estado para datos de la billetera - listo para conectar con backend
+  const [walletData, setWalletData] = useState({
+    balance: '0.0000',
+    usdValue: '$0.00',
+    change: '+$0.00',
+    changePercent: '+0.00%',
+    currency: 'UNI',
+    currentPrice: '$0.00',
+    isLoading: true
+  })
+
+  // Función para obtener datos del backend
+  const fetchWalletData = async () => {
+    try {
+      setWalletData(prev => ({ ...prev, isLoading: true }))
+      
+      // Por ahora usar datos de ejemplo hasta conectar el backend real
+      // TODO: Descomentar cuando tengas el backend listo
+      // const walletAddress = 'USER_WALLET_ADDRESS';
+      // const data = await getWalletBalance(walletAddress);
+      // setWalletData(data);
+      
+      // Simular delay de red
+      await new Promise(resolve => setTimeout(resolve, 1000))
+      
+      // Datos de ejemplo
+      const mockData = {
+        balance: '2.4856',
+        usdValue: '$110,789.45',
+        change: '+$3,245.67',
+        changePercent: '+3.02%',
+        currency: 'UNI',
+        currentPrice: '$44,567.23',
+        isLoading: false
+      }
+      
+      setWalletData(mockData)
+    } catch (error) {
+      console.error('Error fetching wallet data:', error)
+      setWalletData(prev => ({ ...prev, isLoading: false }))
+    }
+  }
+
+  // Cargar datos al montar el componente
+  useEffect(() => {
+    fetchWalletData()
+  }, [])
+
+  return (
+    <div className={`min-h-screen transition-colors duration-300 ${
+      isDarkMode ? 'bg-gray-900' : 'bg-white'
+    }`}>
+      {/* Curved Menu */}
+      <Header 
+        isActive={isMenuActive}
+        setIsActive={setIsMenuActive}
+      />
+      
+      {/* Header */}
+      <div className="bg-university-red px-5 py-4">
+        <div className="flex justify-between items-center">
+          <MenuButton 
+            isActive={isMenuActive}
+            onClick={() => setIsMenuActive(!isMenuActive)}
+          />
+          <LionLogoTransparent size={40} />
+          <div className="flex items-center space-x-2">
+            <button 
+              className="p-2 rounded-full bg-white/10 backdrop-blur-sm hover:bg-white/20 transition-colors"
+              onClick={toggleDarkMode}
+            >
+              {isDarkMode ? <Sun size={20} color="white" /> : <Moon size={20} color="white" />}
+            </button>
+            <button className="p-2">
+              <Bell size={24} color="white" />
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* Main Content */}
+      <div className={`pb-8 transition-colors duration-300 ${
+        isDarkMode ? 'bg-gray-900' : 'bg-white'
+      }`}>
+        {/* Action Buttons */}
+        <div className="flex justify-around px-5 py-5">
+          <ActionButton 
+            icon="arrow-up" 
+            label="Send" 
+            onClick={() => console.log('Send')}
+            isDarkMode={isDarkMode}
+          />
+          <ActionButton 
+            icon="arrow-down" 
+            label="Receive" 
+            onClick={() => console.log('Receive')}
+            isDarkMode={isDarkMode}
+          />
+          <ActionButton 
+            icon="repeat" 
+            label="Swap" 
+            onClick={() => console.log('Swap')}
+            isDarkMode={isDarkMode}
+          />
+          <ActionButton 
+            icon="qr-code" 
+            label="Scan" 
+            onClick={() => console.log('Scan')}
+            isDarkMode={isDarkMode}
+          />
+        </div>
+
+        {/* Balance Card */}
+        <BalanceCard 
+          balance={walletData.balance}
+          usdValue={walletData.usdValue}
+          change={walletData.change}
+          changePercent={walletData.changePercent}
+          currency={walletData.currency}
+          isLoading={walletData.isLoading}
+          onRefresh={fetchWalletData}
+          userInitial="R"
+          isDarkMode={isDarkMode}
+        />
+
+        {/* Price Chart */}
+        <PriceChart 
+          currentPrice={walletData.currentPrice}
+          isLoading={walletData.isLoading}
+          isDarkMode={isDarkMode}
+        />
+
+        {/* Recent Activity Button */}
+        <button 
+          className={`flex justify-between items-center mx-5 mt-5 p-4 rounded-xl border transition-colors ${
+            isDarkMode 
+              ? 'bg-gray-800 border-gray-700 hover:bg-gray-700' 
+              : 'bg-white border-gray-200 hover:bg-gray-50'
+          }`}
+          onClick={() => router.push('/history')}
+        >
+          <span className={`text-base font-medium transition-colors ${
+            isDarkMode ? 'text-white' : 'text-gray-800'
+          }`}>View Recent Activity</span>
+          <ChevronRight size={20} color="#722F37" />
+        </button>
+      </div>
+    </div>
+  )
+}
