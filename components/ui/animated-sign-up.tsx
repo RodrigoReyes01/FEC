@@ -171,7 +171,7 @@ const SignUpPage: React.FC = () => {
 
       <div className="min-h-screen flex items-center justify-center p-4">
         <div className="w-full max-w-md">
-          <div className={`${
+          <div className={`rainbow-glow-border-thick ${
             isDarkMode 
               ? 'bg-gray-900/95 border-gray-700/20' 
               : 'bg-white/95 border-white/20'
@@ -225,11 +225,11 @@ const SignUpPage: React.FC = () => {
               {/* Username Field */}
               <div className="relative">
                 <div className="relative">
-                  <span className={`absolute left-4 top-3 pointer-events-none transition-all duration-200 ${
+                  <span className={`absolute left-4 top-3 pointer-events-none transition-all duration-200 font-semibold z-10 text-university-red ${
                     isUsernameFocused || username
                       ? 'top-[22px] text-sm'
                       : 'top-3'
-                  } ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                  }`}>
                     @
                   </span>
                   <input
@@ -456,44 +456,6 @@ const SignUpPage: React.FC = () => {
                 Create Account
               </button>
             </form>
-
-            {/* Separator */}
-            <div className="my-6 flex items-center">
-              <div className={`flex-1 border-t transition-colors duration-300 ${
-                isDarkMode ? 'border-gray-600' : 'border-gray-200'
-              }`}></div>
-              <span className={`px-4 text-sm transition-colors duration-300 ${
-                isDarkMode ? 'text-gray-400' : 'text-gray-500'
-              }`}>or continue with</span>
-              <div className={`flex-1 border-t transition-colors duration-300 ${
-                isDarkMode ? 'border-gray-600' : 'border-gray-200'
-              }`}></div>
-            </div>
-
-            {/* Social Login */}
-            <div className="flex justify-center space-x-4">
-              <button className={`p-3 rounded-xl transition-colors ${
-                isDarkMode 
-                  ? 'bg-gray-700 hover:bg-gray-600 text-white' 
-                  : 'bg-gray-100 hover:bg-gray-200 text-gray-900'
-              }`}>
-                <Github size={18} />
-              </button>
-              <button className={`p-3 rounded-xl transition-colors ${
-                isDarkMode 
-                  ? 'bg-gray-700 hover:bg-gray-600 text-white' 
-                  : 'bg-gray-100 hover:bg-gray-200 text-gray-900'
-              }`}>
-                <Twitter size={18} />
-              </button>
-              <button className={`p-3 rounded-xl transition-colors ${
-                isDarkMode 
-                  ? 'bg-gray-700 hover:bg-gray-600 text-white' 
-                  : 'bg-gray-100 hover:bg-gray-200 text-gray-900'
-              }`}>
-                <Linkedin size={18} />
-              </button>
-            </div>
 
             {/* Sign In Link */}
             <p className={`text-center text-sm mt-6 transition-colors duration-300 ${

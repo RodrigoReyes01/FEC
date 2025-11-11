@@ -105,7 +105,7 @@ export default function WalletScreen() {
           <ActionButton 
             icon="arrow-up" 
             label="Send" 
-            onClick={() => console.log('Send')}
+            onClick={() => router.push('/send')}
             isDarkMode={isDarkMode}
           />
           <ActionButton 
@@ -115,9 +115,9 @@ export default function WalletScreen() {
             isDarkMode={isDarkMode}
           />
           <ActionButton 
-            icon="repeat" 
-            label="Swap" 
-            onClick={() => console.log('Swap')}
+            icon="shopping-cart" 
+            label="Buy" 
+            onClick={() => console.log('Buy')}
             isDarkMode={isDarkMode}
           />
           <ActionButton 

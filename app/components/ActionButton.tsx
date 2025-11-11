@@ -1,6 +1,6 @@
 'use client'
 
-import { ArrowUp, ArrowDown, Repeat, QrCode, LucideIcon } from 'lucide-react'
+import { ArrowUp, ArrowDown, ShoppingCart, QrCode, LucideIcon } from 'lucide-react'
 
 interface ActionButtonProps {
   icon: string
@@ -12,7 +12,7 @@ interface ActionButtonProps {
 const iconMap: Record<string, LucideIcon> = {
   'arrow-up': ArrowUp,
   'arrow-down': ArrowDown,
-  'repeat': Repeat,
+  'shopping-cart': ShoppingCart,
   'qr-code': QrCode,
 }
 

@@ -30,6 +30,16 @@
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
       "static/chunks/app/signup/page.js"
+    ],
+    "/send/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/send/page.js"
+    ],
+    "/history/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/history/page.js"
     ]
   }
 }
