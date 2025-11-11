@@ -17,12 +17,18 @@ import { useTheme } from "../../contexts/ThemeContext";
 const SignUpPage: React.FC = () => {
   const router = useRouter();
   const { isDarkMode, toggleDarkMode } = useTheme();
+  const [name, setName] = useState("");
+  const [username, setUsername] = useState("");
+  const [universityId, setUniversityId] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [rememberMe, setRememberMe] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [isNameFocused, setIsNameFocused] = useState(false);
+  const [isUsernameFocused, setIsUsernameFocused] = useState(false);
+  const [isUniversityIdFocused, setIsUniversityIdFocused] = useState(false);
   const [isEmailFocused, setIsEmailFocused] = useState(false);
   const [isPasswordFocused, setIsPasswordFocused] = useState(false);
   const [isConfirmPasswordFocused, setIsConfirmPasswordFocused] = useState(false);
@@ -66,8 +72,8 @@ const SignUpPage: React.FC = () => {
     e.preventDefault();
     setIsFormSubmitted(true);
     
-    if (email && password && confirmPassword && validateEmail(email) && passwordsMatch) {
-      console.log("Sign up form submitted:", { email, password, rememberMe });
+    if (name && username && universityId && email && password && confirmPassword && validateEmail(email) && passwordsMatch) {
+      console.log("Sign up form submitted:", { name, username, universityId, email, password, rememberMe });
       // Redirect to main wallet page after successful signup
       router.push("/");
     }
@@ -184,6 +190,114 @@ const SignUpPage: React.FC = () => {
             </div>
 
             <form onSubmit={handleSubmit} className="space-y-6">
+              {/* Name Field */}
+              <div className="relative">
+                <input
+                  type="text"
+                  id="name"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  onFocus={() => setIsNameFocused(true)}
+                  onBlur={() => setIsNameFocused(false)}
+                  className={`w-full px-4 py-3 border-2 rounded-xl backdrop-blur-sm transition-all duration-200 focus:outline-none focus:ring-0 ${
+                    isDarkMode 
+                      ? 'bg-gray-800/50 text-white' 
+                      : 'bg-white/50 text-gray-900'
+                  } ${
+                    isNameFocused || name
+                      ? 'border-university-red pt-6 pb-2'
+                      : isDarkMode ? 'border-gray-600' : 'border-gray-200'
+                  }`}
+                  required
+                />
+                <label
+                  htmlFor="name"
+                  className={`absolute left-4 transition-all duration-200 pointer-events-none ${
+                    isNameFocused || name
+                      ? 'top-2 text-xs text-university-red font-medium'
+                      : `top-3 ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`
+                  }`}
+                >
+                  Full Name
+                </label>
+              </div>
+
+              {/* Username Field */}
+              <div className="relative">
+                <div className="relative">
+                  <span className={`absolute left-4 top-3 pointer-events-none transition-all duration-200 ${
+                    isUsernameFocused || username
+                      ? 'top-[22px] text-sm'
+                      : 'top-3'
+                  } ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                    @
+                  </span>
+                  <input
+                    type="text"
+                    id="username"
+                    value={username}
+                    onChange={(e) => setUsername(e.target.value)}
+                    onFocus={() => setIsUsernameFocused(true)}
+                    onBlur={() => setIsUsernameFocused(false)}
+                    className={`w-full pl-8 pr-4 py-3 border-2 rounded-xl backdrop-blur-sm transition-all duration-200 focus:outline-none focus:ring-0 ${
+                      isDarkMode 
+                        ? 'bg-gray-800/50 text-white' 
+                        : 'bg-white/50 text-gray-900'
+                    } ${
+                      isUsernameFocused || username
+                        ? 'border-university-red pt-6 pb-2'
+                        : isDarkMode ? 'border-gray-600' : 'border-gray-200'
+                    }`}
+                    required
+                  />
+                  <label
+                    htmlFor="username"
+                    className={`absolute left-8 transition-all duration-200 pointer-events-none ${
+                      isUsernameFocused || username
+                        ? 'top-2 text-xs text-university-red font-medium'
+                        : `top-3 ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`
+                    }`}
+                  >
+                    Username
+                  </label>
+                </div>
+                <p className={`text-xs mt-1 ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                  Note: You won't be able to change your username after signing up.
+                </p>
+              </div>
+
+              {/* University ID Field */}
+              <div className="relative">
+                <input
+                  type="text"
+                  id="universityId"
+                  value={universityId}
+                  onChange={(e) => setUniversityId(e.target.value)}
+                  onFocus={() => setIsUniversityIdFocused(true)}
+                  onBlur={() => setIsUniversityIdFocused(false)}
+                  className={`w-full px-4 py-3 border-2 rounded-xl backdrop-blur-sm transition-all duration-200 focus:outline-none focus:ring-0 ${
+                    isDarkMode 
+                      ? 'bg-gray-800/50 text-white' 
+                      : 'bg-white/50 text-gray-900'
+                  } ${
+                    isUniversityIdFocused || universityId
+                      ? 'border-university-red pt-6 pb-2'
+                      : isDarkMode ? 'border-gray-600' : 'border-gray-200'
+                  }`}
+                  required
+                />
+                <label
+                  htmlFor="universityId"
+                  className={`absolute left-4 transition-all duration-200 pointer-events-none ${
+                    isUniversityIdFocused || universityId
+                      ? 'top-2 text-xs text-university-red font-medium'
+                      : `top-3 ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`
+                  }`}
+                >
+                  University ID
+                </label>
+              </div>
+
               {/* Email Field */}
               <div className="relative">
                 <input
@@ -337,7 +451,7 @@ const SignUpPage: React.FC = () => {
               <button
                 type="submit"
                 className="w-full bg-university-red text-white py-3 rounded-xl font-semibold hover:bg-university-red-light transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
-                disabled={isFormSubmitted && (!email || !password || !confirmPassword || !isEmailValid || !passwordsMatch)}
+                disabled={isFormSubmitted && (!name || !username || !universityId || !email || !password || !confirmPassword || !isEmailValid || !passwordsMatch)}
               >
                 Create Account
               </button>
