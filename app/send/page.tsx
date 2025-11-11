@@ -12,6 +12,7 @@ export default function SendPage() {
   const { isDarkMode, toggleDarkMode } = useTheme()
   const [receiverWallet, setReceiverWallet] = useState('')
   const [amount, setAmount] = useState('0')
+  const [showConfirmation, setShowConfirmation] = useState(false)
 
   const handleIncrement = () => {
     const currentAmount = parseFloat(amount) || 0
@@ -35,10 +36,21 @@ export default function SendPage() {
 
   const handleSend = () => {
     if (receiverWallet && parseFloat(amount) > 0) {
-      console.log('Sending:', { receiverWallet, amount })
-      // TODO: Implement send transaction
-      router.push('/')
+      setShowConfirmation(true)
     }
+  }
+
+  const handleConfirmSend = () => {
+    console.log('Sending:', { receiverWallet, amount })
+    // TODO: Implement send transaction
+    setShowConfirmation(false)
+    router.push('/')
+  }
+
+  // Truncate wallet address for display
+  const truncateAddress = (address: string) => {
+    if (address.length <= 13) return address
+    return `${address.slice(0, 6)}...${address.slice(-5)}`
   }
 
   return (
@@ -144,15 +156,79 @@ export default function SendPage() {
             className={`w-full py-4 rounded-full text-lg font-semibold transition-colors ${
               !receiverWallet || parseFloat(amount) <= 0
                 ? 'bg-gray-400 text-gray-600 cursor-not-allowed'
-                : isDarkMode
-                  ? 'bg-gray-800 text-white hover:bg-gray-700'
-                  : 'bg-gray-900 text-white hover:bg-gray-800'
+                : 'bg-university-red text-white hover:bg-university-red-light'
             }`}
           >
             Send
           </button>
         </div>
       </div>
+
+      {/* Confirmation Modal */}
+      {showConfirmation && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+          <div className={`w-full max-w-md rounded-3xl shadow-2xl p-8 ${
+            isDarkMode ? 'bg-gray-900' : 'bg-white'
+          }`}>
+            {/* Coin Logo */}
+            <div className="flex justify-center mb-6">
+              <CoinLogo size={100} />
+            </div>
+
+            {/* Confirmation Text */}
+            <h2 className={`text-center text-xl font-semibold mb-6 ${
+              isDarkMode ? 'text-white' : 'text-gray-900'
+            }`}>
+              Are you sure you want to send
+            </h2>
+
+            {/* Amount Display */}
+            <div className={`rounded-3xl p-8 mb-6 border-2 ${
+              isDarkMode ? 'bg-gray-800 border-gray-700' : 'bg-gray-100 border-gray-200'
+            }`}>
+              <p className={`text-center text-4xl font-bold ${
+                isDarkMode ? 'text-white' : 'text-gray-900'
+              }`}>
+                {amount}
+              </p>
+            </div>
+
+            {/* To Text */}
+            <p className={`text-center text-lg mb-2 ${
+              isDarkMode ? 'text-white' : 'text-gray-900'
+            }`}>
+              to
+            </p>
+
+            {/* Receiver Wallet */}
+            <p className={`text-center text-lg font-semibold mb-8 ${
+              isDarkMode ? 'text-white' : 'text-gray-900'
+            }`}>
+              {truncateAddress(receiverWallet)}
+            </p>
+
+            {/* Action Buttons */}
+            <div className="flex gap-4">
+              <button
+                onClick={() => setShowConfirmation(false)}
+                className={`flex-1 py-3 rounded-full text-lg font-semibold transition-colors ${
+                  isDarkMode
+                    ? 'bg-gray-800 text-white hover:bg-gray-700'
+                    : 'bg-gray-200 text-gray-900 hover:bg-gray-300'
+                }`}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleConfirmSend}
+                className="flex-1 py-3 rounded-full text-lg font-semibold bg-university-red text-white hover:bg-university-red-light transition-colors"
+              >
+                Send
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
