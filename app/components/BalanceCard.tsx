@@ -1,6 +1,7 @@
 'use client'
 
 import { RefreshCw } from 'lucide-react'
+import CoinLogo from './CoinLogo'
 
 interface BalanceCardProps {
   balance: string
@@ -44,16 +45,8 @@ export default function BalanceCard({
   return (
     <div className="bg-university-red mx-5 mt-5 p-5 rounded-3xl">
       <div className="flex items-center mb-4">
-        <div className="w-10 h-10 rounded-full bg-black flex items-center justify-center mr-4">
-          {userAvatar ? (
-            <img 
-              src={userAvatar} 
-              alt="User Avatar" 
-              className="w-full h-full rounded-full object-cover"
-            />
-          ) : (
-            <span className="text-white text-lg font-bold">{userInitial}</span>
-          )}
+        <div className="mr-4">
+          <CoinLogo size={60} />
         </div>
         <div className="flex-1">
           <h3 className="text-white text-base font-medium">Total Balance</h3>

@@ -3,7 +3,7 @@
 import React, { useState, useRef } from "react";
 import { motion, useMotionValue, AnimatePresence } from "framer-motion";
 import Link from "next/link";
-import { Wallet, History, LogIn, UserPlus, Home } from "lucide-react";
+import { User, History, QrCode, LogOut } from "lucide-react";
 import { useTheme } from "../../contexts/ThemeContext";
 
 interface iNavItem {
@@ -54,10 +54,10 @@ const MENU_SLIDE_ANIMATION = {
 
 const defaultNavItems: iNavItem[] = [
   {
-    heading: "Wallet",
-    href: "/",
-    subheading: "Your crypto dashboard",
-    icon: <Wallet size={20} />,
+    heading: "Profile",
+    href: "/profile",
+    subheading: "View and edit your profile",
+    icon: <User size={20} />,
   },
   {
     heading: "History",
@@ -66,16 +66,16 @@ const defaultNavItems: iNavItem[] = [
     icon: <History size={20} />,
   },
   {
-    heading: "Login",
-    href: "/login",
-    subheading: "Sign in to your account",
-    icon: <LogIn size={20} />,
+    heading: "My QR",
+    href: "/qr",
+    subheading: "Your QR code",
+    icon: <QrCode size={20} />,
   },
   {
-    heading: "Sign Up",
-    href: "/signup",
-    subheading: "Create new account",
-    icon: <UserPlus size={20} />,
+    heading: "Log Out",
+    href: "/login",
+    subheading: "Sign out of your account",
+    icon: <LogOut size={20} />,
   },
 ];
 
@@ -83,7 +83,7 @@ const CustomFooter: React.FC<{ isDarkMode: boolean }> = ({ isDarkMode }) => {
   return (
     <div className="flex w-full text-sm justify-center text-university-red px-10 md:px-24 py-5">
       <div className="flex items-center space-x-2">
-        <Wallet size={20} />
+        <User size={20} />
         <span className="font-medium">University Crypto Wallet</span>
       </div>
     </div>

@@ -7,6 +7,7 @@ import ActionButton from './components/ActionButton'
 import BalanceCard from './components/BalanceCard'
 import PriceChart from './components/PriceChart'
 import LionLogoTransparent from './components/LionLogoTransparent'
+import RainbowButton from './components/RainbowButton'
 import Header, { MenuButton } from '../components/ui/curved-menu'
 import { useTheme } from '../contexts/ThemeContext'
 
@@ -148,19 +149,16 @@ export default function WalletScreen() {
         />
 
         {/* Recent Activity Button */}
-        <button 
-          className={`flex justify-between items-center mx-5 mt-5 p-4 rounded-xl border transition-colors ${
-            isDarkMode 
-              ? 'bg-gray-800 border-gray-700 hover:bg-gray-700' 
-              : 'bg-white border-gray-200 hover:bg-gray-50'
-          }`}
+        <RainbowButton
           onClick={() => router.push('/history')}
+          isDarkMode={isDarkMode}
+          className="flex justify-between items-center mx-5 mt-5 p-4 rounded-xl"
         >
           <span className={`text-base font-medium transition-colors ${
             isDarkMode ? 'text-white' : 'text-gray-800'
           }`}>View Recent Activity</span>
           <ChevronRight size={20} color="#722F37" />
-        </button>
+        </RainbowButton>
       </div>
     </div>
   )
