@@ -4,7 +4,7 @@ import React, { useState, useRef } from "react";
 import { motion, useMotionValue, AnimatePresence } from "framer-motion";
 import Link from "next/link";
 import { User, History, QrCode, LogOut } from "lucide-react";
-import { useTheme } from "../../contexts/ThemeContext";
+import { useTheme } from "../contexts/ThemeContext";
 
 interface iNavItem {
   heading: string;

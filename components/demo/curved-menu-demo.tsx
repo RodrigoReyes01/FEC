@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import CurvedMenu, { MenuButton } from "@/components/ui/curved-menu";
+import CurvedMenu, { MenuButton } from "@/components/CurvedMenu";
 
 const CurvedMenuDemo = () => {
   const [isMenuActive, setIsMenuActive] = useState(false);

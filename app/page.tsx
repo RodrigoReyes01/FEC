@@ -8,7 +8,7 @@ import BalanceCard from './components/BalanceCard'
 import PriceChart from './components/PriceChart'
 import LionLogoTransparent from './components/LionLogoTransparent'
 import RainbowButton from './components/RainbowButton'
-import Header, { MenuButton } from '../components/ui/curved-menu'
+import Header, { MenuButton } from '../components/CurvedMenu'
 import { useTheme } from '../contexts/ThemeContext'
 
 export default function WalletScreen() {
