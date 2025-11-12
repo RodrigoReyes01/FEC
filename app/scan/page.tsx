@@ -22,29 +22,59 @@ export default function ScanPage() {
 
   const startCamera = async () => {
     try {
+      // Check if mediaDevices is supported
+      if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+        throw new Error('Camera not supported on this device')
+      }
+
       // Try rear camera first (for mobile devices)
       let stream
       try {
         stream = await navigator.mediaDevices.getUserMedia({
-          video: { facingMode: 'environment' }
+          video: { 
+            facingMode: { ideal: 'environment' },
+            width: { ideal: 1280 },
+            height: { ideal: 720 }
+          }
         })
       } catch (err) {
         // If rear camera fails, try front camera (for computers/laptops)
         console.log('Rear camera not available, trying front camera...', err)
         stream = await navigator.mediaDevices.getUserMedia({
-          video: true
+          video: {
+            width: { ideal: 1280 },
+            height: { ideal: 720 }
+          }
         })
       }
       
       if (videoRef.current && stream) {
         videoRef.current.srcObject = stream
-        await videoRef.current.play()
-        setHasPermission(true)
+        // Wait for video to be ready
+        videoRef.current.onloadedmetadata = () => {
+          videoRef.current?.play().then(() => {
+            setHasPermission(true)
+          }).catch((playErr) => {
+            console.error('Error playing video:', playErr)
+            setHasPermission(false)
+            setError('Unable to start camera preview.')
+          })
+        }
       }
-    } catch (err) {
+    } catch (err: any) {
       console.error('Error accessing camera:', err)
       setHasPermission(false)
-      setError('Unable to access camera. Please check permissions.')
+      
+      // Provide more specific error messages
+      if (err.name === 'NotAllowedError' || err.name === 'PermissionDeniedError') {
+        setError('Camera permission denied. Please allow camera access in your browser settings.')
+      } else if (err.name === 'NotFoundError' || err.name === 'DevicesNotFoundError') {
+        setError('No camera found on this device.')
+      } else if (err.name === 'NotReadableError' || err.name === 'TrackStartError') {
+        setError('Camera is already in use by another application.')
+      } else {
+        setError('Unable to access camera. Please check permissions and try again.')
+      }
     }
   }
 
