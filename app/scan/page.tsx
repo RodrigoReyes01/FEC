@@ -12,21 +12,32 @@ export default function ScanPage() {
   const videoRef = useRef<HTMLVideoElement>(null)
   const [hasPermission, setHasPermission] = useState<boolean | null>(null)
   const [error, setError] = useState<string>('')
+  const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
-    startCamera()
+    // Add a small delay to ensure component is mounted
+    const timer = setTimeout(() => {
+      startCamera()
+    }, 100)
+    
     return () => {
+      clearTimeout(timer)
       stopCamera()
     }
   }, [])
 
   const startCamera = async () => {
     try {
+      setIsLoading(true)
+      console.log('Starting camera...')
+      
       // Check if mediaDevices is supported
       if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
         throw new Error('Camera not supported on this device')
       }
 
+      console.log('Requesting camera permission...')
+      
       // Try rear camera first (for mobile devices)
       let stream
       try {
@@ -37,6 +48,7 @@ export default function ScanPage() {
             height: { ideal: 720 }
           }
         })
+        console.log('Rear camera stream obtained')
       } catch (err) {
         // If rear camera fails, try front camera (for computers/laptops)
         console.log('Rear camera not available, trying front camera...', err)
@@ -46,24 +58,32 @@ export default function ScanPage() {
             height: { ideal: 720 }
           }
         })
+        console.log('Front camera stream obtained')
       }
       
       if (videoRef.current && stream) {
+        console.log('Setting video source...')
         videoRef.current.srcObject = stream
-        // Wait for video to be ready
-        videoRef.current.onloadedmetadata = () => {
-          videoRef.current?.play().then(() => {
-            setHasPermission(true)
-          }).catch((playErr) => {
-            console.error('Error playing video:', playErr)
-            setHasPermission(false)
-            setError('Unable to start camera preview.')
-          })
+        
+        // Try to play immediately
+        try {
+          await videoRef.current.play()
+          console.log('Video playing successfully')
+          setHasPermission(true)
+          setIsLoading(false)
+        } catch (playErr) {
+          console.error('Error playing video:', playErr)
+          setHasPermission(false)
+          setIsLoading(false)
+          setError('Unable to start camera preview.')
         }
+      } else {
+        throw new Error('Video element not ready')
       }
     } catch (err: any) {
       console.error('Error accessing camera:', err)
       setHasPermission(false)
+      setIsLoading(false)
       
       // Provide more specific error messages
       if (err.name === 'NotAllowedError' || err.name === 'PermissionDeniedError') {
@@ -72,8 +92,10 @@ export default function ScanPage() {
         setError('No camera found on this device.')
       } else if (err.name === 'NotReadableError' || err.name === 'TrackStartError') {
         setError('Camera is already in use by another application.')
+      } else if (err.message === 'Camera not supported on this device') {
+        setError(err.message)
       } else {
-        setError('Unable to access camera. Please check permissions and try again.')
+        setError(`Unable to access camera: ${err.message || 'Unknown error'}`)
       }
     }
   }
@@ -121,9 +143,22 @@ export default function ScanPage() {
 
       {/* Camera View */}
       <div className="relative flex flex-col items-center justify-center p-4 min-h-[calc(100vh-80px)]">
-        {hasPermission === null && (
+        {/* Hidden video element - always rendered so ref is available */}
+        <video
+          ref={videoRef}
+          autoPlay
+          playsInline
+          muted
+          className="hidden"
+        />
+
+        {(hasPermission === null || isLoading) && (
           <div className={`text-center ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
+            <div className="mb-4">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-university-red mx-auto"></div>
+            </div>
             <p className="text-lg">Requesting camera permission...</p>
+            <p className="text-sm mt-2 opacity-70">Please allow camera access when prompted</p>
           </div>
         )}
 
@@ -146,10 +181,15 @@ export default function ScanPage() {
             {/* Camera Preview */}
             <div className="relative rounded-3xl overflow-hidden mb-6">
               <video
-                ref={videoRef}
                 autoPlay
                 playsInline
+                muted
                 className="w-full aspect-square object-cover"
+                ref={(el) => {
+                  if (el && videoRef.current && videoRef.current.srcObject) {
+                    el.srcObject = videoRef.current.srcObject
+                  }
+                }}
               />
               
               {/* Scan Frame Overlay */}
