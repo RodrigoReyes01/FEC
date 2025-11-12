@@ -650,6 +650,33 @@ video {
 .mt-2 {
   margin-top: 0.5rem;
 }
+.-mt-4 {
+  margin-top: -1rem;
+}
+.-mt-2 {
+  margin-top: -0.5rem;
+}
+.-mt-0 {
+  margin-top: -0px;
+}
+.-mt-1 {
+  margin-top: -0.25rem;
+}
+.-mt-6 {
+  margin-top: -1.5rem;
+}
+.-mt-10 {
+  margin-top: -2.5rem;
+}
+.-mt-14 {
+  margin-top: -3.5rem;
+}
+.-mt-16 {
+  margin-top: -4rem;
+}
+.-mt-20 {
+  margin-top: -5rem;
+}
 .block {
   display: block;
 }
@@ -821,6 +848,9 @@ video {
 }
 .items-baseline {
   align-items: baseline;
+}
+.justify-start {
+  justify-content: flex-start;
 }
 .justify-end {
   justify-content: flex-end;
@@ -1111,6 +1141,10 @@ video {
 .py-5 {
   padding-top: 1.25rem;
   padding-bottom: 1.25rem;
+}
+.px-8 {
+  padding-left: 2rem;
+  padding-right: 2rem;
 }
 .pb-2 {
   padding-bottom: 0.5rem;
@@ -1536,6 +1570,11 @@ a {
 .hover\:bg-gray-300:hover {
   --tw-bg-opacity: 1;
   background-color: rgb(209 213 219 / var(--tw-bg-opacity, 1));
+}
+
+.hover\:bg-gray-900:hover {
+  --tw-bg-opacity: 1;
+  background-color: rgb(17 24 39 / var(--tw-bg-opacity, 1));
 }
 
 .hover\:text-gray-200:hover {

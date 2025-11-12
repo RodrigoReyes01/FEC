@@ -1,8 +1,9 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { ArrowLeft, Copy, Sun, Moon } from 'lucide-react'
+import CoinLogo from '../components/CoinLogo'
 import LionLogoTransparent from '../components/LionLogoTransparent'
 import { useTheme } from '../../contexts/ThemeContext'
 
@@ -31,99 +32,29 @@ export default function QRPage() {
     setTimeout(() => setCopied(false), 2000)
   }
 
-  // Create particles effect
-  useEffect(() => {
-    const canvas = document.getElementById('particles') as HTMLCanvasElement
-    if (!canvas) return
-    const ctx = canvas.getContext('2d')
-    if (!ctx) return
 
-    const setCanvasSize = () => {
-      canvas.width = window.innerWidth
-      canvas.height = window.innerHeight
-    }
-    setCanvasSize()
-    window.addEventListener('resize', setCanvasSize)
-
-    class Particle {
-      x: number
-      y: number
-      size: number
-      speedX: number
-      speedY: number
-      color: string
-
-      constructor() {
-        this.x = Math.random() * canvas.width
-        this.y = Math.random() * canvas.height
-        this.size = Math.random() * 3 + 1
-        this.speedX = (Math.random() - 0.5) * 0.5
-        this.speedY = (Math.random() - 0.5) * 0.5
-        this.color = isDarkMode
-          ? `rgba(255, 255, 255, ${Math.random() * 0.2})`
-          : `rgba(255, 255, 255, ${Math.random() * 0.3})`
-      }
-
-      update() {
-        this.x += this.speedX
-        this.y += this.speedY
-        if (this.x > canvas.width) this.x = 0
-        if (this.x < 0) this.x = canvas.width
-        if (this.y > canvas.height) this.y = 0
-        if (this.y < 0) this.y = canvas.height
-      }
-
-      draw() {
-        if (!ctx) return
-        ctx.fillStyle = this.color
-        ctx.beginPath()
-        ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2)
-        ctx.fill()
-      }
-    }
-
-    const particles: Particle[] = []
-    const particleCount = Math.min(100, Math.floor((canvas.width * canvas.height) / 15000))
-
-    for (let i = 0; i < particleCount; i++) {
-      particles.push(new Particle())
-    }
-
-    const animate = () => {
-      if (!ctx) return
-      ctx.clearRect(0, 0, canvas.width, canvas.height)
-      for (const particle of particles) {
-        particle.update()
-        particle.draw()
-      }
-      requestAnimationFrame(animate)
-    }
-
-    animate()
-
-    return () => {
-      window.removeEventListener('resize', setCanvasSize)
-    }
-  }, [isDarkMode])
 
   return (
-    <div className="min-h-screen bg-university-red relative overflow-hidden">
-      <canvas id="particles" className="absolute inset-0 pointer-events-none"></canvas>
-
+    <div className={`min-h-screen transition-colors duration-300 ${
+      isDarkMode ? 'bg-gray-900' : 'bg-white'
+    }`}>
       {/* Header */}
-      <div className="relative z-10 flex items-center justify-between p-4">
-        <button
-          onClick={() => router.back()}
-          className="p-2 rounded-full bg-white/10 backdrop-blur-sm text-white hover:bg-white/20 transition-colors"
-        >
-          <ArrowLeft size={24} />
-        </button>
-        <button
-          onClick={toggleDarkMode}
-          className="p-2 rounded-full bg-white/10 backdrop-blur-sm text-white hover:bg-white/20 transition-colors"
-        >
-          {isDarkMode ? <Sun size={20} /> : <Moon size={20} />}
-        </button>
+      <div className="bg-university-red px-5 py-4">
+        <div className="flex justify-between items-center">
+          <button
+            onClick={() => router.back()}
+            className="p-2 rounded-full bg-white/10 backdrop-blur-sm hover:bg-white/20 transition-colors"
+          >
+            <ArrowLeft size={24} color="white" />
+          </button>
+          <LionLogoTransparent size={40} />
+          <button
+            className="p-2 rounded-full bg-white/10 backdrop-blur-sm hover:bg-white/20 transition-colors"
+            onClick={toggleDarkMode}
+          >
+            {isDarkMode ? <Sun size={20} color="white" /> : <Moon size={20} color="white" />}
+          </button>
+        </div>
       </div>
 
       {/* QR Card */}
@@ -143,9 +74,9 @@ export default function QRPage() {
             </p>
           </div>
 
-          {/* Lion Logo */}
+          {/* Coin Logo */}
           <div className="flex justify-center mb-3">
-            <LionLogoTransparent size={90} />
+            <CoinLogo size={90} />
           </div>
 
           {/* User Name */}
@@ -198,19 +129,6 @@ export default function QRPage() {
             </button>
           </div>
         </div>
-      </div>
-
-      {/* Add to Apple Wallet Button */}
-      <div className="relative z-10 flex justify-center px-4 -mt-20 pb-8">
-        <button
-          onClick={() => console.log('Add to Apple Wallet')}
-          className="px-8 py-3 rounded-xl font-semibold transition-colors flex items-center gap-2 bg-black text-white hover:bg-gray-900"
-        >
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
-            <path d="M17.05 20.28c-.98.95-2.05.8-3.08.35-1.09-.46-2.09-.48-3.24 0-1.44.62-2.2.44-3.06-.35C2.79 15.25 3.51 7.59 9.05 7.31c1.35.07 2.29.74 3.08.8 1.18-.24 2.31-.93 3.57-.84 1.51.12 2.65.72 3.4 1.8-3.12 1.87-2.38 5.98.48 7.13-.57 1.5-1.31 2.99-2.54 4.09l.01-.01zM12.03 7.25c-.15-2.23 1.66-4.07 3.74-4.25.29 2.58-2.34 4.5-3.74 4.25z"/>
-          </svg>
-          Add to Apple Wallet
-        </button>
       </div>
 
       {/* Copy Notification */}

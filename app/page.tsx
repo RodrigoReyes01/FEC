@@ -76,13 +76,17 @@ export default function WalletScreen() {
       
       {/* Header */}
       <div className="bg-university-red px-5 py-4">
-        <div className="flex justify-between items-center">
-          <MenuButton 
-            isActive={isMenuActive}
-            onClick={() => setIsMenuActive(!isMenuActive)}
-          />
-          <LionLogoTransparent size={40} />
-          <div className="flex items-center space-x-2">
+        <div className="flex items-center">
+          <div className="flex-1 flex justify-start">
+            <MenuButton 
+              isActive={isMenuActive}
+              onClick={() => setIsMenuActive(!isMenuActive)}
+            />
+          </div>
+          <div className="flex justify-center">
+            <LionLogoTransparent size={40} />
+          </div>
+          <div className="flex-1 flex justify-end items-center space-x-2">
             <button 
               className="p-2 rounded-full bg-white/10 backdrop-blur-sm hover:bg-white/20 transition-colors"
               onClick={toggleDarkMode}
@@ -111,7 +115,7 @@ export default function WalletScreen() {
           <ActionButton 
             icon="arrow-down" 
             label="Receive" 
-            onClick={() => console.log('Receive')}
+            onClick={() => router.push('/receive')}
             isDarkMode={isDarkMode}
           />
           <ActionButton 

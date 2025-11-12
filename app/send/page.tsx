@@ -170,9 +170,9 @@ export default function SendPage() {
           <div className={`w-full max-w-md rounded-3xl shadow-2xl p-8 ${
             isDarkMode ? 'bg-gray-900' : 'bg-white'
           }`}>
-            {/* Coin Logo */}
+            {/* Lion Logo */}
             <div className="flex justify-center mb-6">
-              <CoinLogo size={100} />
+              <LionLogoTransparent size={100} />
             </div>
 
             {/* Confirmation Text */}

@@ -1,7 +1,8 @@
 {
-  "/page": "app/page.js",
-  "/login/page": "app/login/page.js",
-  "/signup/page": "app/signup/page.js",
+  "/send/page": "app/send/page.js",
+  "/qr/page": "app/qr/page.js",
+  "/receive/page": "app/receive/page.js",
   "/history/page": "app/history/page.js",
-  "/send/page": "app/send/page.js"
+  "/page": "app/page.js",
+  "/profile/page": "app/profile/page.js"
 }
