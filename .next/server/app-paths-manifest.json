@@ -1,7 +1,8 @@
 {
+  "/not-found": "app/not-found.js",
   "/scan/page": "app/scan/page.js",
   "/page": "app/page.js",
-  "/qr/page": "app/qr/page.js",
+  "/profile/page": "app/profile/page.js",
   "/send/page": "app/send/page.js",
-  "/profile/page": "app/profile/page.js"
+  "/qr/page": "app/qr/page.js"
 }
