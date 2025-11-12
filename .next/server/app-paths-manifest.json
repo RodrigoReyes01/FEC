@@ -1,8 +1,7 @@
 {
-  "/send/page": "app/send/page.js",
-  "/qr/page": "app/qr/page.js",
-  "/receive/page": "app/receive/page.js",
-  "/history/page": "app/history/page.js",
   "/page": "app/page.js",
+  "/scan/page": "app/scan/page.js",
+  "/qr/page": "app/qr/page.js",
+  "/history/page": "app/history/page.js",
   "/profile/page": "app/profile/page.js"
 }

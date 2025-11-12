@@ -127,7 +127,7 @@ export default function WalletScreen() {
           <ActionButton 
             icon="qr-code" 
             label="Scan" 
-            onClick={() => console.log('Scan')}
+            onClick={() => router.push('/scan')}
             isDarkMode={isDarkMode}
           />
         </div>

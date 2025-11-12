@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { Minus, Plus, ArrowLeft, Sun, Moon } from 'lucide-react'
 import CoinLogo from '../components/CoinLogo'
@@ -13,6 +13,15 @@ export default function SendPage() {
   const [receiverWallet, setReceiverWallet] = useState('')
   const [amount, setAmount] = useState('0')
   const [showConfirmation, setShowConfirmation] = useState(false)
+
+  // Get address from URL parameters if coming from scan
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search)
+    const address = params.get('address')
+    if (address) {
+      setReceiverWallet(address)
+    }
+  }, [])
 
   const handleIncrement = () => {
     const currentAmount = parseFloat(amount) || 0
