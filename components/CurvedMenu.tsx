@@ -38,16 +38,16 @@ const MENU_SLIDE_ANIMATION = {
     x: "0", 
     transition: { 
       duration: 0.6, 
-      ease: [0.25, 0.46, 0.45, 0.94],
-      type: "tween"
+      ease: [0.25, 0.46, 0.45, 0.94] as [number, number, number, number],
+      type: "tween" as const
     } 
   },
   exit: {
     x: "-100%",
     transition: { 
       duration: 0.5, 
-      ease: [0.55, 0.06, 0.68, 0.19],
-      type: "tween"
+      ease: [0.55, 0.06, 0.68, 0.19] as [number, number, number, number],
+      type: "tween" as const
     },
   },
 };
@@ -189,7 +189,7 @@ const Curve: React.FC<{ isDarkMode: boolean }> = ({ isDarkMode }) => {
       d: targetPath,
       transition: { 
         duration: 0.7, 
-        ease: [0.25, 0.46, 0.45, 0.94],
+        ease: [0.25, 0.46, 0.45, 0.94] as [number, number, number, number],
         delay: 0.1
       },
     },
@@ -197,7 +197,7 @@ const Curve: React.FC<{ isDarkMode: boolean }> = ({ isDarkMode }) => {
       d: initialPath,
       transition: { 
         duration: 0.6, 
-        ease: [0.55, 0.06, 0.68, 0.19]
+        ease: [0.55, 0.06, 0.68, 0.19] as [number, number, number, number]
       },
     },
   };
