@@ -24,26 +24,13 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   // Initialize theme from localStorage or system preference
   useEffect(() => {
     const savedTheme = localStorage.getItem('theme')
-    const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)')
-    
     if (savedTheme) {
-      // User has manually set a preference
       setIsDarkMode(savedTheme === 'dark')
     } else {
-      // Use system preference
-      setIsDarkMode(mediaQuery.matches)
+      const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches
+      setIsDarkMode(prefersDark)
     }
     setIsInitialized(true)
-
-    // Listen for system theme changes (only if user hasn't set a manual preference)
-    const handleChange = (e: MediaQueryListEvent) => {
-      if (!localStorage.getItem('theme')) {
-        setIsDarkMode(e.matches)
-      }
-    }
-
-    mediaQuery.addEventListener('change', handleChange)
-    return () => mediaQuery.removeEventListener('change', handleChange)
   }, [])
 
   // Save theme to localStorage whenever it changes (only after initialization)
