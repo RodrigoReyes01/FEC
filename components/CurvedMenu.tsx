@@ -84,7 +84,7 @@ const CustomFooter: React.FC<{ isDarkMode: boolean }> = ({ isDarkMode }) => {
     <div className="flex w-full text-sm justify-center text-university-red px-10 md:px-24 py-5">
       <div className="flex items-center space-x-2">
         <User size={20} />
-        <span className="font-medium">University Crypto Wallet</span>
+        <span className="font-medium">MoWa - Mobile Wallet</span>
       </div>
     </div>
   );

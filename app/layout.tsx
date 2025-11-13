@@ -1,9 +1,10 @@
 import type { Metadata } from 'next'
 import './globals.css'
 import { ThemeProvider } from '../contexts/ThemeContext'
+import AppWrapper from '../components/AppWrapper'
 
 export const metadata: Metadata = {
-  title: 'University Crypto Wallet',
+  title: 'MoWa - Mobile Wallet',
   description: 'A custom crypto wallet for university use',
 }
 
@@ -16,9 +17,11 @@ export default function RootLayout({
     <html lang="en">
       <body className="bg-white">
         <ThemeProvider>
-          <div className="min-h-screen bg-white">
-            {children}
-          </div>
+          <AppWrapper>
+            <div className="min-h-screen bg-white">
+              {children}
+            </div>
+          </AppWrapper>
         </ThemeProvider>
       </body>
     </html>
