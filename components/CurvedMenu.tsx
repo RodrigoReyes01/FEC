@@ -3,8 +3,10 @@
 import React, { useState, useRef } from "react";
 import { motion, useMotionValue, AnimatePresence } from "framer-motion";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { User, History, QrCode, LogOut } from "lucide-react";
 import { useTheme } from "../contexts/ThemeContext";
+import { useAuth } from "../contexts/AuthContext";
 
 interface iNavItem {
   heading: string;
@@ -17,6 +19,7 @@ interface iNavLinkProps extends iNavItem {
   setIsActive: (isActive: boolean) => void;
   index: number;
   isDarkMode: boolean;
+  isLogout?: boolean;
 }
 
 interface iCurvedNavbarProps {
@@ -98,8 +101,11 @@ const NavLink: React.FC<iNavLinkProps> = ({
   icon,
   subheading,
   isDarkMode,
+  isLogout,
 }) => {
   const ref = useRef<HTMLAnchorElement | null>(null);
+  const router = useRouter();
+  const { logout } = useAuth();
   const x = useMotionValue(0);
   const y = useMotionValue(0);
 
@@ -111,8 +117,13 @@ const NavLink: React.FC<iNavLinkProps> = ({
     y.set(mouseY / rect.height - 0.5);
   };
 
-  const handleClick = () => {
-    return setIsActive(false);
+  const handleClick = (e: React.MouseEvent) => {
+    if (isLogout) {
+      e.preventDefault();
+      logout();
+      router.push('/login');
+    }
+    setIsActive(false);
   };
 
   return (
@@ -261,6 +272,7 @@ const CurvedNavbar: React.FC<iCurvedNavbarProps & { footer?: React.ReactNode }> 
                     setIsActive={setIsActive}
                     index={index + 1}
                     isDarkMode={isDarkMode}
+                    isLogout={item.heading === "Log Out"}
                   />
                 );
               })}

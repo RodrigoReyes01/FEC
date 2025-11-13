@@ -13,10 +13,12 @@ import {
 } from "lucide-react";
 import LionLogoTransparent from "../../app/components/LionLogoTransparent";
 import { useTheme } from "../../contexts/ThemeContext";
+import { useAuth } from "../../contexts/AuthContext";
 
 const LoginPage: React.FC = () => {
   const router = useRouter();
   const { isDarkMode, toggleDarkMode } = useTheme();
+  const { login } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [rememberMe, setRememberMe] = useState(false);
@@ -25,6 +27,7 @@ const LoginPage: React.FC = () => {
   const [isPasswordFocused, setIsPasswordFocused] = useState(false);
   const [isEmailValid, setIsEmailValid] = useState(true);
   const [isFormSubmitted, setIsFormSubmitted] = useState(false);
+  const [loginError, setLoginError] = useState("");
 
   // Email validation
   const validateEmail = (email: string) => {
@@ -47,10 +50,16 @@ const LoginPage: React.FC = () => {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setIsFormSubmitted(true);
+    setLoginError("");
+    
     if (email && password && validateEmail(email)) {
-      console.log("Form submitted:", { email, password, rememberMe });
-      // Redirect to main wallet page
-      router.push("/");
+      const success = login(email, password);
+      if (success) {
+        // Redirect to main wallet page
+        router.push("/");
+      } else {
+        setLoginError("Invalid credentials. Please try again.");
+      }
     }
   };
 
@@ -265,6 +274,13 @@ const LoginPage: React.FC = () => {
                   Forgot Password?
                 </a>
               </div>
+
+              {/* Error Message */}
+              {loginError && (
+                <div className="text-red-500 text-sm text-center">
+                  {loginError}
+                </div>
+              )}
 
               {/* Submit Button */}
               <button
