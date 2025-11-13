@@ -1465,7 +1465,6 @@ a {
 .rainbow-glow-border-thick {
   position: relative;
   isolation: isolate;
-  z-index: 0;
 }
 
 .rainbow-glow-border-thick::before {
@@ -1492,12 +1491,21 @@ a {
   mask-composite: exclude;
   animation: rainbow-border-flow 4s linear infinite;
   pointer-events: none;
-  z-index: -1;
+  z-index: 0;
+}
+
+.rainbow-glow-border-thick::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: inherit;
+  z-index: 1;
 }
 
 .rainbow-glow-border-thick > * {
   position: relative;
-  z-index: 1;
+  z-index: 2;
 }
 
 /* Respect reduced motion preferences */
