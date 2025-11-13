@@ -1464,13 +1464,13 @@ a {
 /* Rainbow Border Animation - Thicker variant for profile */
 .rainbow-glow-border-thick {
   position: relative;
-  background-clip: padding-box;
+  isolation: isolate;
 }
 
 .rainbow-glow-border-thick::before {
   content: "";
   position: absolute;
-  inset: 0;
+  inset: -4px;
   border-radius: inherit;
   padding: 4px;
   background: linear-gradient(
@@ -1492,7 +1492,6 @@ a {
   animation: rainbow-border-flow 4s linear infinite;
   pointer-events: none;
   z-index: -1;
-  margin: -4px;
 }
 
 /* Respect reduced motion preferences */
