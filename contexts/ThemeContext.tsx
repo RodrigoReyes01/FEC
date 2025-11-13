@@ -20,24 +20,29 @@ export const useTheme = () => {
 export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [isDarkMode, setIsDarkMode] = useState(false)
   const [isInitialized, setIsInitialized] = useState(false)
+  const [userPreference, setUserPreference] = useState<'manual' | 'system'>('system')
 
   // Initialize theme from localStorage or system preference
   useEffect(() => {
     const savedTheme = localStorage.getItem('theme')
+    const savedPreference = localStorage.getItem('themePreference') as 'manual' | 'system' | null
     const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)')
     
-    if (savedTheme) {
+    if (savedPreference === 'manual' && savedTheme) {
       // User has manually set a preference
       setIsDarkMode(savedTheme === 'dark')
+      setUserPreference('manual')
     } else {
       // Use system preference
       setIsDarkMode(mediaQuery.matches)
+      setUserPreference('system')
     }
     setIsInitialized(true)
 
-    // Listen for system theme changes (only if user hasn't set a manual preference)
+    // Listen for system theme changes (only if using system preference)
     const handleChange = (e: MediaQueryListEvent) => {
-      if (!localStorage.getItem('theme')) {
+      const currentPreference = localStorage.getItem('themePreference')
+      if (currentPreference !== 'manual') {
         setIsDarkMode(e.matches)
       }
     }
@@ -46,15 +51,19 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     return () => mediaQuery.removeEventListener('change', handleChange)
   }, [])
 
-  // Save theme to localStorage whenever it changes (only after initialization)
+  // Save theme to localStorage only when manually toggled
   useEffect(() => {
-    if (isInitialized) {
+    if (isInitialized && userPreference === 'manual') {
       localStorage.setItem('theme', isDarkMode ? 'dark' : 'light')
+      localStorage.setItem('themePreference', 'manual')
     }
-  }, [isDarkMode, isInitialized])
+  }, [isDarkMode, isInitialized, userPreference])
 
   const toggleDarkMode = () => {
     setIsDarkMode(!isDarkMode)
+    setUserPreference('manual')
+    localStorage.setItem('theme', !isDarkMode ? 'dark' : 'light')
+    localStorage.setItem('themePreference', 'manual')
   }
 
   return (
