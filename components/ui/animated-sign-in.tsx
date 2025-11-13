@@ -153,9 +153,9 @@ const LoginPage: React.FC = () => {
         {isDarkMode ? <Sun size={20} /> : <Moon size={20} />}
       </button>
 
-      <div className="min-h-screen flex items-center justify-center p-4">
+      <div className="min-h-screen flex items-center justify-center p-4 relative z-10">
         <div className="w-full max-w-md">
-          <div className={`rainbow-glow-border-thick ${
+          <div className={`rainbow-glow-border-thick relative ${
             isDarkMode 
               ? 'bg-gray-900/95 border-gray-700/20' 
               : 'bg-white/95 border-white/20'

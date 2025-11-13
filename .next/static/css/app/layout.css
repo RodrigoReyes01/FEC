@@ -1465,6 +1465,7 @@ a {
 .rainbow-glow-border-thick {
   position: relative;
   isolation: isolate;
+  z-index: 0;
 }
 
 .rainbow-glow-border-thick::before {
@@ -1492,6 +1493,11 @@ a {
   animation: rainbow-border-flow 4s linear infinite;
   pointer-events: none;
   z-index: -1;
+}
+
+.rainbow-glow-border-thick > * {
+  position: relative;
+  z-index: 1;
 }
 
 /* Respect reduced motion preferences */
