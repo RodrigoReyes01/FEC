@@ -1,46 +1,81 @@
 'use client'
 
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react'
+import { supabase } from '../lib/supabase'
+import { Session, User } from '@supabase/supabase-js'
 
 interface AuthContextType {
   isAuthenticated: boolean
-  login: (username: string, password: string) => boolean
-  logout: () => void
+  user: User | null
+  session: Session | null
+  login: (email: string, password: string) => Promise<{ error: any }>
+  signup: (email: string, password: string, metadata: any) => Promise<{ data?: any; error: any }>
+  logout: () => Promise<void>
   isLoading: boolean
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [isAuthenticated, setIsAuthenticated] = useState(false)
+  const [user, setUser] = useState<User | null>(null)
+  const [session, setSession] = useState<Session | null>(null)
   const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
-    // Check if user is already logged in (from localStorage)
-    const authStatus = localStorage.getItem('isAuthenticated')
-    if (authStatus === 'true') {
-      setIsAuthenticated(true)
-    }
-    setIsLoading(false)
+    // Check active session
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setSession(session)
+      setUser(session?.user ?? null)
+      setIsLoading(false)
+    })
+
+    // Listen for changes
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      setSession(session)
+      setUser(session?.user ?? null)
+      setIsLoading(false)
+    })
+
+    return () => subscription.unsubscribe()
   }, [])
 
-  const login = (username: string, password: string) => {
-    // Simple authentication logic - replace with real API call
-    if (username && password) {
-      setIsAuthenticated(true)
-      localStorage.setItem('isAuthenticated', 'true')
-      return true
-    }
-    return false
+  const login = async (email: string, password: string) => {
+    const { error } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+    })
+    return { error }
   }
 
-  const logout = () => {
-    setIsAuthenticated(false)
-    localStorage.removeItem('isAuthenticated')
+  const signup = async (email: string, password: string, metadata: any) => {
+    const { data, error } = await supabase.auth.signUp({
+      email,
+      password,
+      options: {
+        data: metadata,
+      },
+    })
+    return { data, error }
+  }
+
+  const logout = async () => {
+    await supabase.auth.signOut()
   }
 
   return (
-    <AuthContext.Provider value={{ isAuthenticated, login, logout, isLoading }}>
+    <AuthContext.Provider
+      value={{
+        isAuthenticated: !!session,
+        user,
+        session,
+        login,
+        signup,
+        logout,
+        isLoading
+      }}
+    >
       {children}
     </AuthContext.Provider>
   )

@@ -5,20 +5,21 @@ import { useRouter } from "next/navigation";
 import {
   Eye,
   EyeOff,
-  Github,
-  Twitter,
-  Linkedin,
   Sun,
   Moon,
 } from "lucide-react";
 import LionLogoTransparent from "../../app/components/LionLogoTransparent";
 import { useTheme } from "../../contexts/ThemeContext";
+import { useAuth } from "../../contexts/AuthContext";
+import { supabase } from "../../lib/supabase";
 
 const SignUpPage: React.FC = () => {
   const router = useRouter();
   const { isDarkMode, toggleDarkMode } = useTheme();
-  const [name, setName] = useState("");
-  const [username, setUsername] = useState("");
+  const { signup } = useAuth();
+
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
   const [universityId, setUniversityId] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -26,21 +27,25 @@ const SignUpPage: React.FC = () => {
   const [rememberMe, setRememberMe] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [isNameFocused, setIsNameFocused] = useState(false);
-  const [isUsernameFocused, setIsUsernameFocused] = useState(false);
+
+  const [isFirstNameFocused, setIsFirstNameFocused] = useState(false);
+  const [isLastNameFocused, setIsLastNameFocused] = useState(false);
   const [isUniversityIdFocused, setIsUniversityIdFocused] = useState(false);
   const [isEmailFocused, setIsEmailFocused] = useState(false);
   const [isPasswordFocused, setIsPasswordFocused] = useState(false);
   const [isConfirmPasswordFocused, setIsConfirmPasswordFocused] = useState(false);
+
   const [isEmailValid, setIsEmailValid] = useState(true);
   const [passwordsMatch, setPasswordsMatch] = useState(true);
   const [isFormSubmitted, setIsFormSubmitted] = useState(false);
+  const [signupError, setSignupError] = useState("");
+  const [isCreatingWallet, setIsCreatingWallet] = useState(false);
 
-  // Email validation
+  // Email validation - Enforce @ufm.edu
   const validateEmail = (email: string) => {
     const re =
       /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
-    return re.test(String(email).toLowerCase());
+    return re.test(String(email).toLowerCase()) && email.toLowerCase().endsWith("@ufm.edu");
   };
 
   // Handle email change
@@ -68,14 +73,70 @@ const SignUpPage: React.FC = () => {
   };
 
   // Handle form submission
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsFormSubmitted(true);
-    
-    if (name && username && universityId && email && password && confirmPassword && validateEmail(email) && passwordsMatch) {
-      console.log("Sign up form submitted:", { name, username, universityId, email, password, rememberMe });
-      // Redirect to main wallet page after successful signup
-      router.push("/");
+    setSignupError("");
+
+    // Verificar que se hayan aceptado los términos y condiciones
+    if (!rememberMe) {
+      alert("Debes aceptar los términos y condiciones para continuar");
+      return;
+    }
+
+    if (firstName && lastName && universityId && email && password && confirmPassword && validateEmail(email) && passwordsMatch) {
+      try {
+        // 1. Create Auth User
+        const { data, error } = await signup(email, password, {
+          first_name: firstName,
+          last_name: lastName,
+          university_id: universityId,
+        });
+
+        if (error) {
+          setSignupError(error.message);
+          return;
+        }
+
+        if (data?.user) {
+          setIsCreatingWallet(true);
+
+          try {
+            // Get session token
+            const { data: sessionData } = await supabase.auth.getSession();
+            const token = sessionData.session?.access_token;
+
+            if (!token) {
+              throw new Error('No session token');
+            }
+
+            // Call API to create wallet
+            const response = await fetch('/api/wallet/create', {
+              method: 'POST',
+              headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+              }
+            });
+
+            const result = await response.json();
+
+            if (!response.ok || !result.success) {
+              throw new Error(result.error || 'Failed to create wallet');
+            }
+
+            // Success - redirect to main page
+            router.push("/");
+          } catch (walletErr: any) {
+            console.error("Error creating wallet:", walletErr);
+            setSignupError("Cuenta creada pero hubo un error generando la billetera. Por favor contacta soporte.");
+          } finally {
+            setIsCreatingWallet(false);
+          }
+        }
+      } catch (err: any) {
+        setSignupError(err.message || "Ocurrió un error inesperado");
+      }
     }
   };
 
@@ -161,7 +222,7 @@ const SignUpPage: React.FC = () => {
   return (
     <div className="min-h-screen bg-university-red relative overflow-hidden">
       <canvas id="particles" className="absolute inset-0 pointer-events-none"></canvas>
-      
+
       <button
         className="absolute top-4 right-4 z-10 p-2 rounded-full bg-white/10 backdrop-blur-sm text-white hover:bg-white/20 transition-colors"
         onClick={toggleDarkMode}
@@ -171,99 +232,78 @@ const SignUpPage: React.FC = () => {
 
       <div className="min-h-screen flex items-center justify-center p-4">
         <div className="w-full max-w-md">
-          <div className={`rainbow-glow-border-thick ${
-            isDarkMode 
-              ? 'bg-gray-900/95 border-gray-700/20' 
-              : 'bg-white/95 border-white/20'
-          } backdrop-blur-sm rounded-3xl shadow-2xl p-8 border transition-all duration-300`}>
+          <div className={`rainbow-glow-border-thick ${isDarkMode
+            ? 'bg-gray-900/95 border-gray-700/20'
+            : 'bg-white/95 border-white/20'
+            } backdrop-blur-sm rounded-3xl shadow-2xl p-8 border transition-all duration-300`}>
             {/* Logo and Header */}
             <div className="text-center mb-8">
               <div className="flex justify-center mb-4">
                 <LionLogoTransparent size={80} />
               </div>
-              <h1 className={`text-2xl font-bold mb-2 transition-colors duration-300 ${
-                isDarkMode ? 'text-white' : 'text-gray-800'
-              }`}>Create Account</h1>
-              <p className={`transition-colors duration-300 ${
-                isDarkMode ? 'text-gray-300' : 'text-gray-600'
-              }`}>Join your university wallet</p>
+              <h1 className={`text-2xl font-bold mb-2 transition-colors duration-300 ${isDarkMode ? 'text-white' : 'text-gray-800'
+                }`}>Crear Cuenta</h1>
+              <p className={`transition-colors duration-300 ${isDarkMode ? 'text-gray-300' : 'text-gray-600'
+                }`}>Únete a tu billetera universitaria</p>
             </div>
 
             <form onSubmit={handleSubmit} className="space-y-6">
-              {/* Name Field */}
+              {/* First Name Field */}
               <div className="relative">
                 <input
                   type="text"
-                  id="name"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  onFocus={() => setIsNameFocused(true)}
-                  onBlur={() => setIsNameFocused(false)}
-                  className={`w-full px-4 py-3 border-2 rounded-xl backdrop-blur-sm transition-all duration-200 focus:outline-none focus:ring-0 ${
-                    isDarkMode 
-                      ? 'bg-gray-800/50 text-white' 
-                      : 'bg-white/50 text-gray-900'
-                  } ${
-                    isNameFocused || name
+                  id="firstName"
+                  value={firstName}
+                  onChange={(e) => setFirstName(e.target.value)}
+                  onFocus={() => setIsFirstNameFocused(true)}
+                  onBlur={() => setIsFirstNameFocused(false)}
+                  className={`w-full px-4 py-3 border-2 rounded-xl backdrop-blur-sm transition-all duration-200 focus:outline-none focus:ring-0 ${isDarkMode
+                    ? 'bg-gray-800/50 text-white'
+                    : 'bg-white/50 text-gray-900'
+                    } ${isFirstNameFocused || firstName
                       ? 'border-university-red pt-6 pb-2'
                       : isDarkMode ? 'border-gray-600' : 'border-gray-200'
-                  }`}
+                    }`}
                   required
                 />
                 <label
-                  htmlFor="name"
-                  className={`absolute left-4 transition-all duration-200 pointer-events-none ${
-                    isNameFocused || name
-                      ? 'top-2 text-xs text-university-red font-medium'
-                      : `top-3 ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`
-                  }`}
+                  htmlFor="firstName"
+                  className={`absolute left-4 transition-all duration-200 pointer-events-none ${isFirstNameFocused || firstName
+                    ? 'top-2 text-xs text-university-red font-medium'
+                    : `top-3 ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`
+                    }`}
                 >
-                  Full Name
+                  Nombre
                 </label>
               </div>
 
-              {/* Username Field */}
+              {/* Last Name Field */}
               <div className="relative">
-                <div className="relative">
-                  <span className={`absolute left-4 top-3 pointer-events-none transition-all duration-200 font-semibold z-10 text-university-red ${
-                    isUsernameFocused || username
-                      ? 'top-[22px] text-sm'
-                      : 'top-3'
-                  }`}>
-                    @
-                  </span>
-                  <input
-                    type="text"
-                    id="username"
-                    value={username}
-                    onChange={(e) => setUsername(e.target.value)}
-                    onFocus={() => setIsUsernameFocused(true)}
-                    onBlur={() => setIsUsernameFocused(false)}
-                    className={`w-full pl-8 pr-4 py-3 border-2 rounded-xl backdrop-blur-sm transition-all duration-200 focus:outline-none focus:ring-0 ${
-                      isDarkMode 
-                        ? 'bg-gray-800/50 text-white' 
-                        : 'bg-white/50 text-gray-900'
-                    } ${
-                      isUsernameFocused || username
-                        ? 'border-university-red pt-6 pb-2'
-                        : isDarkMode ? 'border-gray-600' : 'border-gray-200'
+                <input
+                  type="text"
+                  id="lastName"
+                  value={lastName}
+                  onChange={(e) => setLastName(e.target.value)}
+                  onFocus={() => setIsLastNameFocused(true)}
+                  onBlur={() => setIsLastNameFocused(false)}
+                  className={`w-full px-4 py-3 border-2 rounded-xl backdrop-blur-sm transition-all duration-200 focus:outline-none focus:ring-0 ${isDarkMode
+                    ? 'bg-gray-800/50 text-white'
+                    : 'bg-white/50 text-gray-900'
+                    } ${isLastNameFocused || lastName
+                      ? 'border-university-red pt-6 pb-2'
+                      : isDarkMode ? 'border-gray-600' : 'border-gray-200'
                     }`}
-                    required
-                  />
-                  <label
-                    htmlFor="username"
-                    className={`absolute left-8 transition-all duration-200 pointer-events-none ${
-                      isUsernameFocused || username
-                        ? 'top-2 text-xs text-university-red font-medium'
-                        : `top-3 ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`
+                  required
+                />
+                <label
+                  htmlFor="lastName"
+                  className={`absolute left-4 transition-all duration-200 pointer-events-none ${isLastNameFocused || lastName
+                    ? 'top-2 text-xs text-university-red font-medium'
+                    : `top-3 ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`
                     }`}
-                  >
-                    Username
-                  </label>
-                </div>
-                <p className={`text-xs mt-1 ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>
-                  Note: You won't be able to change your username after signing up.
-                </p>
+                >
+                  Apellido
+                </label>
               </div>
 
               {/* University ID Field */}
@@ -275,26 +315,23 @@ const SignUpPage: React.FC = () => {
                   onChange={(e) => setUniversityId(e.target.value)}
                   onFocus={() => setIsUniversityIdFocused(true)}
                   onBlur={() => setIsUniversityIdFocused(false)}
-                  className={`w-full px-4 py-3 border-2 rounded-xl backdrop-blur-sm transition-all duration-200 focus:outline-none focus:ring-0 ${
-                    isDarkMode 
-                      ? 'bg-gray-800/50 text-white' 
-                      : 'bg-white/50 text-gray-900'
-                  } ${
-                    isUniversityIdFocused || universityId
+                  className={`w-full px-4 py-3 border-2 rounded-xl backdrop-blur-sm transition-all duration-200 focus:outline-none focus:ring-0 ${isDarkMode
+                    ? 'bg-gray-800/50 text-white'
+                    : 'bg-white/50 text-gray-900'
+                    } ${isUniversityIdFocused || universityId
                       ? 'border-university-red pt-6 pb-2'
                       : isDarkMode ? 'border-gray-600' : 'border-gray-200'
-                  }`}
+                    }`}
                   required
                 />
                 <label
                   htmlFor="universityId"
-                  className={`absolute left-4 transition-all duration-200 pointer-events-none ${
-                    isUniversityIdFocused || universityId
-                      ? 'top-2 text-xs text-university-red font-medium'
-                      : `top-3 ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`
-                  }`}
+                  className={`absolute left-4 transition-all duration-200 pointer-events-none ${isUniversityIdFocused || universityId
+                    ? 'top-2 text-xs text-university-red font-medium'
+                    : `top-3 ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`
+                    }`}
                 >
-                  University ID
+                  Número de Carnet
                 </label>
               </div>
 
@@ -307,32 +344,28 @@ const SignUpPage: React.FC = () => {
                   onChange={handleEmailChange}
                   onFocus={() => setIsEmailFocused(true)}
                   onBlur={() => setIsEmailFocused(false)}
-                  className={`w-full px-4 py-3 border-2 rounded-xl backdrop-blur-sm transition-all duration-200 focus:outline-none focus:ring-0 ${
-                    isDarkMode 
-                      ? 'bg-gray-800/50 text-white' 
-                      : 'bg-white/50 text-gray-900'
-                  } ${
-                    isEmailFocused || email
+                  className={`w-full px-4 py-3 border-2 rounded-xl backdrop-blur-sm transition-all duration-200 focus:outline-none focus:ring-0 ${isDarkMode
+                    ? 'bg-gray-800/50 text-white'
+                    : 'bg-white/50 text-gray-900'
+                    } ${isEmailFocused || email
                       ? 'border-university-red pt-6 pb-2'
                       : isDarkMode ? 'border-gray-600' : 'border-gray-200'
-                  } ${
-                    !isEmailValid && email ? 'border-red-500' : ''
-                  }`}
+                    } ${!isEmailValid && email ? 'border-red-500' : ''
+                    }`}
                   required
                 />
                 <label
                   htmlFor="email"
-                  className={`absolute left-4 transition-all duration-200 pointer-events-none ${
-                    isEmailFocused || email
-                      ? 'top-2 text-xs text-university-red font-medium'
-                      : `top-3 ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`
-                  }`}
+                  className={`absolute left-4 transition-all duration-200 pointer-events-none ${isEmailFocused || email
+                    ? 'top-2 text-xs text-university-red font-medium'
+                    : `top-3 ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`
+                    }`}
                 >
-                  Email Address
+                  Correo Electrónico (@ufm.edu)
                 </label>
                 {!isEmailValid && email && (
                   <span className="text-red-500 text-sm mt-1 block">
-                    Please enter a valid email
+                    Por favor ingresa un correo válido @ufm.edu
                   </span>
                 )}
               </div>
@@ -346,34 +379,30 @@ const SignUpPage: React.FC = () => {
                   onChange={handlePasswordChange}
                   onFocus={() => setIsPasswordFocused(true)}
                   onBlur={() => setIsPasswordFocused(false)}
-                  className={`w-full px-4 py-3 border-2 rounded-xl backdrop-blur-sm transition-all duration-200 focus:outline-none focus:ring-0 pr-12 ${
-                    isDarkMode 
-                      ? 'bg-gray-800/50 text-white' 
-                      : 'bg-white/50 text-gray-900'
-                  } ${
-                    isPasswordFocused || password
+                  className={`w-full px-4 py-3 border-2 rounded-xl backdrop-blur-sm transition-all duration-200 focus:outline-none focus:ring-0 pr-12 ${isDarkMode
+                    ? 'bg-gray-800/50 text-white'
+                    : 'bg-white/50 text-gray-900'
+                    } ${isPasswordFocused || password
                       ? 'border-university-red pt-6 pb-2'
                       : isDarkMode ? 'border-gray-600' : 'border-gray-200'
-                  }`}
+                    }`}
                   required
                 />
                 <label
                   htmlFor="password"
-                  className={`absolute left-4 transition-all duration-200 pointer-events-none ${
-                    isPasswordFocused || password
-                      ? 'top-2 text-xs text-university-red font-medium'
-                      : `top-3 ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`
-                  }`}
+                  className={`absolute left-4 transition-all duration-200 pointer-events-none ${isPasswordFocused || password
+                    ? 'top-2 text-xs text-university-red font-medium'
+                    : `top-3 ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`
+                    }`}
                 >
-                  Password
+                  Contraseña
                 </label>
                 <button
                   type="button"
-                  className={`absolute right-4 top-3 transition-colors ${
-                    isDarkMode 
-                      ? 'text-gray-400 hover:text-gray-200' 
-                      : 'text-gray-500 hover:text-gray-700'
-                  }`}
+                  className={`absolute right-4 top-3 transition-colors ${isDarkMode
+                    ? 'text-gray-400 hover:text-gray-200'
+                    : 'text-gray-500 hover:text-gray-700'
+                    }`}
                   onClick={() => setShowPassword(!showPassword)}
                   aria-label={showPassword ? "Hide password" : "Show password"}
                 >
@@ -390,36 +419,31 @@ const SignUpPage: React.FC = () => {
                   onChange={handleConfirmPasswordChange}
                   onFocus={() => setIsConfirmPasswordFocused(true)}
                   onBlur={() => setIsConfirmPasswordFocused(false)}
-                  className={`w-full px-4 py-3 border-2 rounded-xl backdrop-blur-sm transition-all duration-200 focus:outline-none focus:ring-0 pr-12 ${
-                    isDarkMode 
-                      ? 'bg-gray-800/50 text-white' 
-                      : 'bg-white/50 text-gray-900'
-                  } ${
-                    isConfirmPasswordFocused || confirmPassword
+                  className={`w-full px-4 py-3 border-2 rounded-xl backdrop-blur-sm transition-all duration-200 focus:outline-none focus:ring-0 pr-12 ${isDarkMode
+                    ? 'bg-gray-800/50 text-white'
+                    : 'bg-white/50 text-gray-900'
+                    } ${isConfirmPasswordFocused || confirmPassword
                       ? 'border-university-red pt-6 pb-2'
                       : isDarkMode ? 'border-gray-600' : 'border-gray-200'
-                  } ${
-                    !passwordsMatch && confirmPassword ? 'border-red-500' : ''
-                  }`}
+                    } ${!passwordsMatch && confirmPassword ? 'border-red-500' : ''
+                    }`}
                   required
                 />
                 <label
                   htmlFor="confirmPassword"
-                  className={`absolute left-4 transition-all duration-200 pointer-events-none ${
-                    isConfirmPasswordFocused || confirmPassword
-                      ? 'top-2 text-xs text-university-red font-medium'
-                      : `top-3 ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`
-                  }`}
+                  className={`absolute left-4 transition-all duration-200 pointer-events-none ${isConfirmPasswordFocused || confirmPassword
+                    ? 'top-2 text-xs text-university-red font-medium'
+                    : `top-3 ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`
+                    }`}
                 >
-                  Confirm Password
+                  Confirmar Contraseña
                 </label>
                 <button
                   type="button"
-                  className={`absolute right-4 top-3 transition-colors ${
-                    isDarkMode 
-                      ? 'text-gray-400 hover:text-gray-200' 
-                      : 'text-gray-500 hover:text-gray-700'
-                  }`}
+                  className={`absolute right-4 top-3 transition-colors ${isDarkMode
+                    ? 'text-gray-400 hover:text-gray-200'
+                    : 'text-gray-500 hover:text-gray-700'
+                    }`}
                   onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                   aria-label={showConfirmPassword ? "Hide password" : "Show password"}
                 >
@@ -427,7 +451,7 @@ const SignUpPage: React.FC = () => {
                 </button>
                 {!passwordsMatch && confirmPassword && (
                   <span className="text-red-500 text-sm mt-1 block">
-                    Passwords do not match
+                    Las contraseñas no coinciden
                   </span>
                 )}
               </div>
@@ -441,32 +465,37 @@ const SignUpPage: React.FC = () => {
                     onChange={() => setRememberMe(!rememberMe)}
                     className="w-4 h-4 text-university-red border-gray-300 rounded focus:ring-university-red"
                   />
-                  <span className={`text-sm transition-colors duration-300 ${
-                    isDarkMode ? 'text-gray-300' : 'text-gray-600'
-                  }`}>I agree to Terms & Conditions</span>
+                  <span className={`text-sm transition-colors duration-300 ${isDarkMode ? 'text-gray-300' : 'text-gray-600'
+                    }`}>Acepto los Términos y Condiciones</span>
                 </label>
               </div>
+
+              {/* Error Message */}
+              {signupError && (
+                <div className="bg-red-500/10 border border-red-500 text-red-500 px-4 py-3 rounded-xl text-sm">
+                  {signupError}
+                </div>
+              )}
 
               {/* Submit Button */}
               <button
                 type="submit"
                 className="w-full bg-university-red text-white py-3 rounded-xl font-semibold hover:bg-university-red-light transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
-                disabled={isFormSubmitted && (!name || !username || !universityId || !email || !password || !confirmPassword || !isEmailValid || !passwordsMatch)}
+                disabled={isCreatingWallet || (isFormSubmitted && (!firstName || !lastName || !universityId || !email || !password || !confirmPassword || !isEmailValid || !passwordsMatch))}
               >
-                Create Account
+                {isCreatingWallet ? 'Creando billetera...' : 'Crear Cuenta'}
               </button>
             </form>
 
             {/* Sign In Link */}
-            <p className={`text-center text-sm mt-6 transition-colors duration-300 ${
-              isDarkMode ? 'text-gray-300' : 'text-gray-600'
-            }`}>
-              Already have an account?{" "}
-              <button 
+            <p className={`text-center text-sm mt-6 transition-colors duration-300 ${isDarkMode ? 'text-gray-300' : 'text-gray-600'
+              }`}>
+              ¿Ya tienes una cuenta?{" "}
+              <button
                 onClick={() => router.push("/login")}
                 className="text-university-red hover:underline font-medium bg-transparent border-none cursor-pointer"
               >
-                Sign in
+                Iniciar sesión
               </button>
             </p>
           </div>
