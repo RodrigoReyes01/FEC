@@ -2,6 +2,10 @@ import { NextResponse } from 'next/server'
 import { getAdminContract, getAdminWallet } from '@/lib/adminWallet'
 import { ethers } from 'ethers'
 
+// Configuración para Vercel - desactivar caché
+export const dynamic = 'force-dynamic'
+export const revalidate = 0
+
 let CACHE: { data: any; ts: number } | null = null
 const TTL_MS = 5 * 60 * 1000 // 5 minutes
 
@@ -24,7 +28,13 @@ async function withRetry<T>(fn: () => Promise<T>, retries = 3, baseDelay = 300) 
 export async function GET() {
     try {
         if (CACHE && Date.now() - CACHE.ts < TTL_MS) {
-            return NextResponse.json(CACHE.data)
+            return NextResponse.json(CACHE.data, {
+                headers: {
+                    'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
+                    'Pragma': 'no-cache',
+                    'Expires': '0'
+                }
+            })
         }
         const contract = getAdminContract()
 
@@ -51,14 +61,14 @@ export async function GET() {
             const adminWallet = await getAdminWallet()
             const adminEthBalance = await adminWallet.provider.getBalance(adminWallet.address)
             console.log('[admin/stats] admin ETH balance', ethers.formatEther(adminEthBalance))
-        } catch {}
+        } catch { }
 
         const dec = Number(decimals)
-        
+
         // Obtener balance de ETH del admin wallet
         const adminWallet = await getAdminWallet()
         const adminEthBalance = await adminWallet.provider.getBalance(adminWallet.address)
-        
+
         const data = {
             totalSupply: ethers.formatUnits(totalSupply, dec),
             treasuryBalance: ethers.formatUnits(await contract.balanceOf(treasury), dec),
@@ -69,7 +79,13 @@ export async function GET() {
             decimals: dec
         }
         CACHE = { data, ts: Date.now() }
-        return NextResponse.json(data)
+        return NextResponse.json(data, {
+            headers: {
+                'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
+                'Pragma': 'no-cache',
+                'Expires': '0'
+            }
+        })
     } catch (error: any) {
         return NextResponse.json({ error: error.message }, { status: 500 })
     }
