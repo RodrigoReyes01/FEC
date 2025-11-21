@@ -5,30 +5,52 @@ import { useRouter } from 'next/navigation'
 import { ArrowLeft, Copy, Sun, Moon } from 'lucide-react'
 import LionLogoTransparent from '../components/LionLogoTransparent'
 import { useTheme } from '../../contexts/ThemeContext'
+import { useAuth } from '../../contexts/AuthContext'
+import QRCode from 'qrcode'
 
 export default function QRPage() {
   const router = useRouter()
+  const { user } = useAuth()
   const { isDarkMode, toggleDarkMode } = useTheme()
   const [copied, setCopied] = useState(false)
+  const [userProfile, setUserProfile] = useState<any>(null)
+  const [qrCode, setQrCode] = useState('')
 
-  // Mock user data - replace with actual data from backend
-  const userData = {
-    name: 'Rodrigo Reyes',
-    username: '@rodrigoreyes',
-    universityId: '20200090',
-    walletAddress: '0x742d35Cc6634C0532925a3b844Bc9e7595f0bEb'
-  }
+  useEffect(() => {
+    const fetchProfile = async () => {
+      if (!user) return
+      
+      try {
+        const res = await fetch(`/api/users/profile?userId=${user.id}`)
+        const profile = await res.json()
+        setUserProfile(profile)
+        
+        // Generar QR con el carnet
+        if (profile.universityId) {
+          const qr = await QRCode.toDataURL(profile.universityId, {
+            width: 300,
+            margin: 2,
+            color: {
+              dark: '#000000',
+              light: '#FFFFFF'
+            }
+          })
+          setQrCode(qr)
+        }
+      } catch (e) {
+        console.error('Error fetching profile:', e)
+      }
+    }
+    
+    fetchProfile()
+  }, [user])
 
-  // Truncate wallet address for display
-  const truncateAddress = (address: string) => {
-    if (address.length <= 13) return address
-    return `${address.slice(0, 6)}...${address.slice(-5)}`
-  }
-
-  const handleCopyWallet = () => {
-    navigator.clipboard.writeText(userData.walletAddress)
-    setCopied(true)
-    setTimeout(() => setCopied(false), 2000)
+  const handleCopyCarnet = () => {
+    if (userProfile?.universityId) {
+      navigator.clipboard.writeText(userProfile.universityId)
+      setCopied(true)
+      setTimeout(() => setCopied(false), 2000)
+    }
   }
 
   // Create particles effect
@@ -139,7 +161,7 @@ export default function QRPage() {
             <p className={`text-lg font-medium tracking-[0.5em] ${
               isDarkMode ? 'text-gray-700' : 'text-gray-400'
             }`}>
-              {userData.universityId}
+              {userProfile?.universityId || 'CARNET'}
             </p>
           </div>
 
@@ -152,40 +174,44 @@ export default function QRPage() {
           <h1 className={`text-2xl font-bold text-center mb-1 transition-colors duration-300 ${
             isDarkMode ? 'text-white' : 'text-gray-900'
           }`}>
-            {userData.name}
+            {userProfile?.firstName} {userProfile?.lastName}
           </h1>
 
-          {/* Username */}
+          {/* Carnet */}
           <p className={`text-base text-center mb-4 transition-colors duration-300 ${
             isDarkMode ? 'text-gray-400' : 'text-gray-600'
           }`}>
-            {userData.username}
+            Carnet: {userProfile?.universityId}
           </p>
 
-          {/* User QR Placeholder */}
+          {/* QR Code */}
           <div className="flex justify-center mb-4">
-            <div className={`w-48 h-48 rounded-2xl flex items-center justify-center transition-colors duration-300 ${
-              isDarkMode ? 'bg-gray-800 border-gray-700' : 'bg-gray-100 border-gray-200'
-            } border-2`}>
-              <p className={`text-base transition-colors duration-300 ${
-                isDarkMode ? 'text-gray-500' : 'text-gray-400'
-              }`}>
-                User QR
-              </p>
-            </div>
+            {qrCode ? (
+              <img src={qrCode} alt="QR Code" className="w-48 h-48 rounded-2xl" />
+            ) : (
+              <div className={`w-48 h-48 rounded-2xl flex items-center justify-center transition-colors duration-300 ${
+                isDarkMode ? 'bg-gray-800 border-gray-700' : 'bg-gray-100 border-gray-200'
+              } border-2`}>
+                <p className={`text-base transition-colors duration-300 ${
+                  isDarkMode ? 'text-gray-500' : 'text-gray-400'
+                }`}>
+                  Cargando QR...
+                </p>
+              </div>
+            )}
           </div>
 
-          {/* Wallet Address */}
+          {/* Carnet para copiar */}
           <div className={`flex items-center justify-center gap-2 transition-colors duration-300 ${
             isDarkMode ? 'text-white' : 'text-gray-900'
           }`}>
             <p className={`text-sm font-mono transition-colors duration-300 ${
               isDarkMode ? 'text-white' : 'text-gray-900'
             }`}>
-              {truncateAddress(userData.walletAddress)}
+              {userProfile?.universityId || 'Sin carnet'}
             </p>
             <button
-              onClick={handleCopyWallet}
+              onClick={handleCopyCarnet}
               className={`p-1.5 rounded-lg transition-colors ${
                 copied 
                   ? 'bg-university-red text-white' 

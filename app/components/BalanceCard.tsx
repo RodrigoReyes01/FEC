@@ -9,6 +9,7 @@ interface BalanceCardProps {
   change: string
   changePercent: string
   currency: string
+  tokenName?: string
   isLoading?: boolean
   onRefresh?: () => void
   userInitial?: string
@@ -21,7 +22,8 @@ export default function BalanceCard({
   usdValue, 
   change, 
   changePercent, 
-  currency, 
+  currency,
+  tokenName = 'Token', 
   isLoading = false,
   onRefresh,
   userInitial = 'R',
@@ -49,8 +51,8 @@ export default function BalanceCard({
           <CoinLogo size={60} />
         </div>
         <div className="flex-1">
-          <h3 className="text-white text-base font-medium">Total Balance</h3>
-          <p className="text-white/80 text-sm">USD Value</p>
+          <h3 className="text-white text-base font-medium">Balance Total</h3>
+          <p className="text-white/80 text-sm">{tokenName}</p>
         </div>
         {onRefresh && (
           <button onClick={onRefresh} className="p-2">
@@ -59,12 +61,9 @@ export default function BalanceCard({
         )}
       </div>
       
-      <div className="flex justify-between items-baseline mb-1">
-        <span className="text-white text-2xl font-bold">{balance}</span>
-        <span className="text-white text-xl font-semibold">{usdValue}</span>
+      <div className="flex justify-between items-baseline mb-4">
+        <span className="text-white text-3xl font-bold">{balance} {currency}</span>
       </div>
-      
-      <p className="text-white text-base mb-4">{currency}</p>
       
       <div className="bg-black/20 p-3 rounded-xl flex items-center">
         <span className={`text-base font-semibold mr-2 ${
@@ -77,7 +76,7 @@ export default function BalanceCard({
         }`}>
           {changePercent}
         </span>
-        <span className="text-white/80 text-sm">today</span>
+        <span className="text-white/80 text-sm">hoy</span>
       </div>
     </div>
   )

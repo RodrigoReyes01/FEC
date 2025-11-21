@@ -18,53 +18,67 @@ export default function WalletScreen() {
   const { isDarkMode, toggleDarkMode } = useTheme()
   const [isMenuActive, setIsMenuActive] = useState(false)
 
-  // Estado para datos de la billetera - listo para conectar con backend
   const [walletData, setWalletData] = useState({
     balance: '0.0000',
     usdValue: '$0.00',
     change: '+$0.00',
     changePercent: '+0.00%',
-    currency: 'UNI',
+    currency: 'TOKENS',
+    tokenName: 'Token',
     currentPrice: '$0.00',
     isLoading: true
   })
+  const [userProfile, setUserProfile] = useState<any>(null)
 
-  // Función para obtener datos del backend
   const fetchWalletData = async () => {
     try {
       setWalletData(prev => ({ ...prev, isLoading: true }))
 
-      // Por ahora usar datos de ejemplo hasta conectar el backend real
-      // TODO: Descomentar cuando tengas el backend listo
-      // const walletAddress = 'USER_WALLET_ADDRESS';
-      // const data = await getWalletBalance(walletAddress);
-      // setWalletData(data);
-
-      // Simular delay de red
-      await new Promise(resolve => setTimeout(resolve, 1000))
-
-      // Datos de ejemplo
-      const mockData = {
-        balance: '2.4856',
-        usdValue: '$110,789.45',
-        change: '+$3,245.67',
-        changePercent: '+3.02%',
-        currency: 'UNI',
-        currentPrice: '$44,567.23',
-        isLoading: false
+      if (!user) {
+        setWalletData(prev => ({ ...prev, isLoading: false }))
+        return
       }
 
-      setWalletData(mockData)
+      // Obtener perfil del usuario
+      const profileRes = await fetch(`/api/users/profile?userId=${user.id}`)
+      const profile = await profileRes.json()
+      setUserProfile(profile)
+
+      if (!profile.walletAddress) {
+        setWalletData(prev => ({ ...prev, isLoading: false }))
+        return
+      }
+
+      // Obtener balance real del contrato y símbolo del token
+      const [balanceRes, tokenRes] = await Promise.all([
+        fetch(`/api/users/balance?address=${profile.walletAddress}`),
+        fetch('/api/token/info')
+      ])
+
+      const balanceData = await balanceRes.json()
+      const tokenData = await tokenRes.json()
+
+      setWalletData({
+        balance: parseFloat(balanceData.balance).toFixed(4),
+        usdValue: '$0.00',
+        change: '+$0.00',
+        changePercent: '+0.00%',
+        currency: tokenData.symbol || 'TOKENS',
+        tokenName: tokenData.name || 'Token',
+        currentPrice: '$0.00',
+        isLoading: false
+      })
     } catch (error) {
       console.error('Error fetching wallet data:', error)
       setWalletData(prev => ({ ...prev, isLoading: false }))
     }
   }
 
-  // Cargar datos al montar el componente
   useEffect(() => {
-    fetchWalletData()
-  }, [])
+    if (user) {
+      fetchWalletData()
+    }
+  }, [user])
 
   return (
     <div className={`min-h-screen transition-colors duration-300 ${isDarkMode ? 'bg-gray-900' : 'bg-white'
@@ -118,25 +132,25 @@ export default function WalletScreen() {
         <div className="flex justify-around px-5 py-5">
           <ActionButton
             icon="arrow-up"
-            label="Send"
+            label="Enviar"
             onClick={() => router.push('/send')}
             isDarkMode={isDarkMode}
           />
           <ActionButton
             icon="arrow-down"
-            label="Receive"
+            label="Recibir"
             onClick={() => router.push('/receive')}
             isDarkMode={isDarkMode}
           />
           <ActionButton
             icon="shopping-cart"
-            label="Buy"
-            onClick={() => console.log('Buy')}
+            label="Comprar"
+            onClick={() => router.push('/buy')}
             isDarkMode={isDarkMode}
           />
           <ActionButton
             icon="qr-code"
-            label="Scan"
+            label="Escanear"
             onClick={() => router.push('/scan')}
             isDarkMode={isDarkMode}
           />
@@ -149,6 +163,7 @@ export default function WalletScreen() {
           change={walletData.change}
           changePercent={walletData.changePercent}
           currency={walletData.currency}
+          tokenName={walletData.tokenName}
           isLoading={walletData.isLoading}
           onRefresh={fetchWalletData}
           userInitial="R"

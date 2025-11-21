@@ -113,9 +113,9 @@ export default function ScanPage() {
 
   // Simulate QR code scan (in production, use a QR code library like jsQR)
   const handleTestScan = () => {
-    const mockAddress = '0x742d35Cc6634C0532925a3b844Bc9e7595f0bEb'
+    const mockCarnet = '20200090'
     stopCamera()
-    router.push(`/send?address=${encodeURIComponent(mockAddress)}`)
+    router.push(`/send?carnet=${encodeURIComponent(mockCarnet)}`)
   }
 
   return (

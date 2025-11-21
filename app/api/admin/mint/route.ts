@@ -41,17 +41,19 @@ export async function POST(request: Request) {
         const body = await request.json()
         const { recipient, amount } = body
 
-        if (!recipient || !amount) {
-            return NextResponse.json({ error: 'Missing parameters' }, { status: 400 })
+        if (!amount) {
+            return NextResponse.json({ error: 'Missing amount' }, { status: 400 })
         }
 
         const contract = getAdminContract()
+        // If no recipient provided, default to treasury address
+        const target = recipient && recipient.length > 0 ? recipient : await contract.treasury()
         const amountWei = ethers.parseEther(amount.toString())
 
-        const tx = await contract.mint(recipient, amountWei)
+        const tx = await contract.mint(target, amountWei)
         await tx.wait()
 
-        return NextResponse.json({ success: true, txHash: tx.hash })
+        return NextResponse.json({ success: true, txHash: tx.hash, to: target })
     } catch (error: any) {
         console.error('Mint error:', error)
         return NextResponse.json({ error: error.message || 'Mint failed' }, { status: 500 })

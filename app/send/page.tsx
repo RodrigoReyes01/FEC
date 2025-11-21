@@ -2,26 +2,88 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { Minus, Plus, ArrowLeft, Sun, Moon } from 'lucide-react'
+import { Minus, Plus, ArrowLeft, Sun, Moon, Loader2 } from 'lucide-react'
 import CoinLogo from '../components/CoinLogo'
 import LionLogoTransparent from '../components/LionLogoTransparent'
 import { useTheme } from '../../contexts/ThemeContext'
+import { useAuth } from '../../contexts/AuthContext'
 
 export default function SendPage() {
   const router = useRouter()
+  const { user } = useAuth()
   const { isDarkMode, toggleDarkMode } = useTheme()
-  const [receiverWallet, setReceiverWallet] = useState('')
+  const [carnet, setCarnet] = useState('')
   const [amount, setAmount] = useState('0')
   const [showConfirmation, setShowConfirmation] = useState(false)
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState('')
+  const [receiverInfo, setReceiverInfo] = useState<any>(null)
+  const [userProfile, setUserProfile] = useState<any>(null)
+  const [tokenSymbol, setTokenSymbol] = useState('TOKENS')
+  const [balance, setBalance] = useState('0')
 
-  // Get address from URL parameters if coming from scan
+  // Obtener carnet desde URL si viene del QR
   useEffect(() => {
     const params = new URLSearchParams(window.location.search)
-    const address = params.get('address')
-    if (address) {
-      setReceiverWallet(address)
+    const carnetParam = params.get('carnet')
+    if (carnetParam) {
+      setCarnet(carnetParam)
+      searchByCarnet(carnetParam)
     }
   }, [])
+
+  // Obtener perfil del usuario y balance
+  useEffect(() => {
+    const fetchUserData = async () => {
+      if (!user) return
+      
+      try {
+        const [profileRes, tokenRes] = await Promise.all([
+          fetch(`/api/users/profile?userId=${user.id}`),
+          fetch('/api/token/info')
+        ])
+        
+        const profile = await profileRes.json()
+        const token = await tokenRes.json()
+        
+        setUserProfile(profile)
+        setTokenSymbol(token.symbol || 'TOKENS')
+        
+        if (profile.walletAddress) {
+          const balanceRes = await fetch(`/api/users/balance?address=${profile.walletAddress}`)
+          const balanceData = await balanceRes.json()
+          setBalance(balanceData.balance)
+        }
+      } catch (e) {
+        console.error('Error fetching user data:', e)
+      }
+    }
+    
+    fetchUserData()
+  }, [user])
+
+  const searchByCarnet = async (carnetValue: string) => {
+    if (!carnetValue.trim()) {
+      setReceiverInfo(null)
+      return
+    }
+    
+    try {
+      const res = await fetch(`/api/users/by-carnet?carnet=${carnetValue}`)
+      if (res.ok) {
+        const data = await res.json()
+        setReceiverInfo(data)
+        setError('')
+      } else {
+        setReceiverInfo(null)
+        setError('Carnet no encontrado')
+      }
+    } catch (e) {
+      console.error('Error searching carnet:', e)
+      setReceiverInfo(null)
+      setError('Error al buscar carnet')
+    }
+  }
 
   const handleIncrement = () => {
     const currentAmount = parseFloat(amount) || 0
@@ -44,23 +106,57 @@ export default function SendPage() {
   }
 
   const handleSend = () => {
-    if (receiverWallet && parseFloat(amount) > 0) {
-      setShowConfirmation(true)
+    setError('')
+    
+    if (!receiverInfo) {
+      setError('Busca un destinatario válido')
+      return
+    }
+    
+    if (!parseFloat(amount) || parseFloat(amount) <= 0) {
+      setError('Ingresa una cantidad válida')
+      return
+    }
+    
+    if (parseFloat(amount) > parseFloat(balance)) {
+      setError('Balance insuficiente')
+      return
+    }
+    
+    setShowConfirmation(true)
+  }
+
+  const handleConfirmSend = async () => {
+    setLoading(true)
+    setError('')
+    
+    try {
+      const res = await fetch('/api/users/transfer', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          fromAddress: userProfile.walletAddress,
+          toCarnet: carnet,
+          amount
+        })
+      })
+      
+      const data = await res.json()
+      
+      if (!res.ok) {
+        throw new Error(data.error || 'Error al enviar')
+      }
+      
+      setShowConfirmation(false)
+      router.push('/')
+    } catch (e: any) {
+      setError(e.message)
+      setShowConfirmation(false)
+    } finally {
+      setLoading(false)
     }
   }
 
-  const handleConfirmSend = () => {
-    console.log('Sending:', { receiverWallet, amount })
-    // TODO: Implement send transaction
-    setShowConfirmation(false)
-    router.push('/')
-  }
-
-  // Truncate wallet address for display
-  const truncateAddress = (address: string) => {
-    if (address.length <= 13) return address
-    return `${address.slice(0, 6)}...${address.slice(-5)}`
-  }
 
   return (
     <div className={`min-h-screen transition-colors duration-300 ${
@@ -98,19 +194,43 @@ export default function SendPage() {
             <CoinLogo size={100} />
           </div>
 
-          {/* Receiver's Wallet Address */}
+          {/* Carnet del Destinatario */}
           <div className="mb-6">
             <input
               type="text"
-              value={receiverWallet}
-              onChange={(e) => setReceiverWallet(e.target.value)}
-              placeholder="Receiver's Wallet Address"
+              value={carnet}
+              onChange={(e) => {
+                setCarnet(e.target.value)
+                searchByCarnet(e.target.value)
+              }}
+              placeholder="Carnet del destinatario"
               className={`w-full px-4 py-3 rounded-xl border-2 text-center transition-colors ${
                 isDarkMode
                   ? 'bg-gray-800 border-gray-700 text-white placeholder-gray-500 focus:border-university-red'
                   : 'bg-white border-gray-200 text-gray-900 placeholder-gray-400 focus:border-university-red'
               } outline-none`}
             />
+            {receiverInfo && (
+              <div className={`mt-2 text-center text-sm ${
+                isDarkMode ? 'text-green-400' : 'text-green-600'
+              }`}>
+                ✓ {receiverInfo.firstName} {receiverInfo.lastName}
+              </div>
+            )}
+            {error && carnet && (
+              <div className={`mt-2 text-center text-sm ${
+                isDarkMode ? 'text-red-400' : 'text-red-600'
+              }`}>
+                {error}
+              </div>
+            )}
+          </div>
+
+          {/* Balance disponible */}
+          <div className={`text-center mb-4 text-sm ${
+            isDarkMode ? 'text-gray-400' : 'text-gray-600'
+          }`}>
+            Balance disponible: {parseFloat(balance).toFixed(4)} {tokenSymbol}
           </div>
 
           {/* Amount Section */}
@@ -120,7 +240,7 @@ export default function SendPage() {
             <h3 className={`text-center text-2xl font-bold mb-4 ${
               isDarkMode ? 'text-white' : 'text-gray-900'
             }`}>
-              Amount
+              Cantidad
             </h3>
             
             {/* Amount Display with +/- buttons */}
@@ -161,14 +281,21 @@ export default function SendPage() {
           {/* Send Button */}
           <button
             onClick={handleSend}
-            disabled={!receiverWallet || parseFloat(amount) <= 0}
-            className={`w-full py-4 rounded-full text-lg font-semibold transition-colors ${
-              !receiverWallet || parseFloat(amount) <= 0
+            disabled={!receiverInfo || parseFloat(amount) <= 0 || loading}
+            className={`w-full py-4 rounded-full text-lg font-semibold transition-colors flex items-center justify-center gap-2 ${
+              !receiverInfo || parseFloat(amount) <= 0 || loading
                 ? 'bg-gray-400 text-gray-600 cursor-not-allowed'
                 : 'bg-university-red text-white hover:bg-university-red-light'
             }`}
           >
-            Send
+            {loading ? (
+              <>
+                <Loader2 className="animate-spin" size={20} />
+                Enviando...
+              </>
+            ) : (
+              'Enviar'
+            )}
           </button>
         </div>
       </div>
@@ -188,7 +315,7 @@ export default function SendPage() {
             <h2 className={`text-center text-xl font-semibold mb-6 ${
               isDarkMode ? 'text-white' : 'text-gray-900'
             }`}>
-              Are you sure you want to send
+              ¿Confirmar envío?
             </h2>
 
             {/* Amount Display */}
@@ -198,7 +325,7 @@ export default function SendPage() {
               <p className={`text-center text-4xl font-bold ${
                 isDarkMode ? 'text-white' : 'text-gray-900'
               }`}>
-                {amount}
+                {amount} {tokenSymbol}
               </p>
             </div>
 
@@ -206,33 +333,47 @@ export default function SendPage() {
             <p className={`text-center text-lg mb-2 ${
               isDarkMode ? 'text-white' : 'text-gray-900'
             }`}>
-              to
+              para
             </p>
 
-            {/* Receiver Wallet */}
-            <p className={`text-center text-lg font-semibold mb-8 ${
+            {/* Receiver Info */}
+            <div className={`text-center mb-8 ${
               isDarkMode ? 'text-white' : 'text-gray-900'
             }`}>
-              {truncateAddress(receiverWallet)}
-            </p>
+              <p className="text-lg font-semibold">
+                {receiverInfo?.firstName} {receiverInfo?.lastName}
+              </p>
+              <p className="text-sm text-gray-500">
+                Carnet: {carnet}
+              </p>
+            </div>
 
             {/* Action Buttons */}
             <div className="flex gap-4">
               <button
                 onClick={() => setShowConfirmation(false)}
+                disabled={loading}
                 className={`flex-1 py-3 rounded-full text-lg font-semibold transition-colors ${
                   isDarkMode
                     ? 'bg-gray-800 text-white hover:bg-gray-700'
                     : 'bg-gray-200 text-gray-900 hover:bg-gray-300'
-                }`}
+                } disabled:opacity-50`}
               >
-                Cancel
+                Cancelar
               </button>
               <button
                 onClick={handleConfirmSend}
-                className="flex-1 py-3 rounded-full text-lg font-semibold bg-university-red text-white hover:bg-university-red-light transition-colors"
+                disabled={loading}
+                className="flex-1 py-3 rounded-full text-lg font-semibold bg-university-red text-white hover:bg-university-red-light transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
               >
-                Send
+                {loading ? (
+                  <>
+                    <Loader2 className="animate-spin" size={20} />
+                    Enviando...
+                  </>
+                ) : (
+                  'Confirmar'
+                )}
               </button>
             </div>
           </div>

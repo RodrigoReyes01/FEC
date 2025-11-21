@@ -1,4 +1,4 @@
-const CACHE_NAME = 'mowa-cache-v1'
+const CACHE_NAME = 'mowa-cache-v2'
 const ASSETS = ['/', '/manifest.json']
 self.addEventListener('install', (event) => {
   event.waitUntil(
@@ -13,11 +13,19 @@ self.addEventListener('activate', (event) => {
 self.addEventListener('fetch', (event) => {
   const { request } = event
   if (request.method !== 'GET') return
+  // Do not cache API requests
+  if (new URL(request.url).pathname.startsWith('/api/')) {
+    event.respondWith(fetch(request))
+    return
+  }
   event.respondWith(
     caches.match(request).then((cached) => {
       const fetchPromise = fetch(request).then((networkResponse) => {
-        const copy = networkResponse.clone()
-        caches.open(CACHE_NAME).then((cache) => cache.put(request, copy))
+        // Only cache successful responses
+        if (networkResponse && networkResponse.ok) {
+          const copy = networkResponse.clone()
+          caches.open(CACHE_NAME).then((cache) => cache.put(request, copy))
+        }
         return networkResponse
       }).catch(() => cached)
       return cached || fetchPromise
