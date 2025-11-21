@@ -24,6 +24,10 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
+html {
+  background: var(--university-red);
+}
+
 body {
   color: rgb(var(--foreground-rgb));
   background: white;

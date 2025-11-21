@@ -8,7 +8,6 @@ import PWA from '../components/PWA'
 export const metadata: Metadata = {
   title: 'MoWa - Mobile Wallet',
   description: 'A custom crypto wallet for university use',
-  themeColor: '#722F37',
   manifest: '/manifest.json',
   appleWebApp: {
     capable: true,
@@ -27,6 +26,10 @@ export const metadata: Metadata = {
   }
 }
 
+export const viewport = {
+  themeColor: '#722F37',
+}
+
 export default function RootLayout({
   children,
 }: {
@@ -36,6 +39,7 @@ export default function RootLayout({
     <html lang="en">
       <head>
         <link rel="manifest" href="/manifest.json" />
+        <meta name="theme-color" content="#722F37" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
         <link rel="apple-touch-icon" href="/Logo192x192.png" />
