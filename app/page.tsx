@@ -5,7 +5,6 @@ import { useRouter } from 'next/navigation'
 import { Bell, ChevronRight, Sun, Moon } from 'lucide-react'
 import ActionButton from './components/ActionButton'
 import BalanceCard from './components/BalanceCard'
-import PriceChart from './components/PriceChart'
 import LionLogoTransparent from './components/LionLogoTransparent'
 import RainbowButton from './components/RainbowButton'
 import Header, { MenuButton } from '../components/CurvedMenu'
@@ -183,16 +182,13 @@ export default function WalletScreen() {
           isDarkMode={isDarkMode}
         />
 
-        {/* Price Chart */}
-        <PriceChart
-          currentPrice={walletData.currentPrice}
-          isLoading={walletData.isLoading}
-          isDarkMode={isDarkMode}
-        />
-
         {/* Recent Activity Button */}
         <RainbowButton
-          onClick={() => router.push('/history')}
+          onClick={() => {
+            if (userProfile?.walletAddress) {
+              window.open(`https://sepolia.etherscan.io/address/${userProfile.walletAddress}#tokentxns`, '_blank')
+            }
+          }}
           isDarkMode={isDarkMode}
           className="flex justify-between items-center mx-5 mt-5 p-4 rounded-xl"
         >

@@ -307,7 +307,7 @@ const Header: React.FC<iHeaderProps> = ({ isActive, setIsActive }) => {
     {
       heading: "History",
       href: walletAddress
-        ? `https://sepolia.etherscan.io/address/${walletAddress}`
+        ? `https://sepolia.etherscan.io/address/${walletAddress}#tokentxns`
         : "/history",
       icon: <History size={24} />,
       external: !!walletAddress,
