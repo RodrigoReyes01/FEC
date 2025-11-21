@@ -27,7 +27,7 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     const savedTheme = localStorage.getItem('theme')
     const savedPreference = localStorage.getItem('themePreference') as 'manual' | 'system' | null
     const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)')
-    
+
     if (savedPreference === 'manual' && savedTheme) {
       // User has manually set a preference
       setIsDarkMode(savedTheme === 'dark')
@@ -58,6 +58,15 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       localStorage.setItem('themePreference', 'manual')
     }
   }, [isDarkMode, isInitialized, userPreference])
+
+  // Apply theme class to document
+  useEffect(() => {
+    if (isDarkMode) {
+      document.documentElement.classList.add('dark')
+    } else {
+      document.documentElement.classList.remove('dark')
+    }
+  }, [isDarkMode])
 
   const toggleDarkMode = () => {
     setIsDarkMode(!isDarkMode)

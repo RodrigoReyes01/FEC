@@ -1,10 +1,15 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { Coins, Wallet, Clock, AlertTriangle, Fuel } from 'lucide-react'
-import StatCard from '../../components/admin/StatCard'
+import RainbowCard from '../../components/admin/RainbowCard'
+import LionLogoTransparent from '../../app/components/LionLogoTransparent'
+import MiniGraph from '../../components/admin/MiniGraph'
+import { Sun, Moon, DollarSign, Wallet } from 'lucide-react'
+import { useTheme } from '../../contexts/ThemeContext'
+import Image from 'next/image'
 
 export default function AdminDashboard() {
+    const { isDarkMode, toggleDarkMode } = useTheme()
     const [stats, setStats] = useState({
         totalSupply: '0',
         treasuryBalance: '0',
@@ -53,81 +58,95 @@ export default function AdminDashboard() {
     }, [])
 
     if (loading) {
-        return (
-            <div className="space-y-8">
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                    {Array.from({ length: 4 }).map((_, i) => (
-                        <div key={i} className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 animate-pulse">
-                            <div className="h-4 w-24 bg-gray-200 rounded mb-4"></div>
-                            <div className="h-8 w-32 bg-gray-200 rounded mb-2"></div>
-                            <div className="h-3 w-16 bg-gray-200 rounded"></div>
-                        </div>
-                    ))}
-                </div>
-            </div>
-        )
-    }
-
-    if (error) {
-        return (
-            <div className="space-y-4">
-                <h1 className="text-2xl font-bold text-gray-900">Resumen General</h1>
-                <div className="p-4 rounded-xl border border-red-200 bg-red-50 text-red-700">
-                    <p className="font-medium">No se pudo cargar la información del token.</p>
-                    <p className="text-sm mt-1">{error}</p>
-                </div>
-            </div>
-        )
+        return <div className="p-8 text-center">Cargando...</div>
     }
 
     return (
         <div className="space-y-8">
-            <div className="flex justify-between items-center">
-                <div>
-                    <h1 className="text-2xl font-bold text-gray-900">Resumen General</h1>
-                    <p className="text-gray-500">{token ? `${token.name} (${token.symbol})` : 'Visión general de la economía del token'}</p>
+            {/* Header */}
+            <div className="flex justify-between items-center bg-[#722F37] -mx-8 -mt-8 px-8 py-4 mb-8">
+                <div className="flex-1"></div>
+                <div className="flex justify-center">
+                    <LionLogoTransparent size={40} />
                 </div>
-                <div className="flex items-center gap-2 bg-white px-4 py-2 rounded-full border border-gray-200 text-sm">
-                    <span className="bg-green-100 text-green-700 text-xs px-2 py-0.5 rounded-full font-bold">ADMIN MODE</span>
+                <div className="flex-1 flex justify-end">
+                    <button
+                        onClick={toggleDarkMode}
+                        className="p-2 rounded-full bg-white/20 text-white hover:bg-white/30 transition-colors"
+                    >
+                        {isDarkMode ? <Sun size={20} /> : <Moon size={20} />}
+                    </button>
                 </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
-                <StatCard
-                    title="Suministro total"
-                    value={parseFloat(stats.totalSupply).toLocaleString()}
-                    subtitle={token ? `Tokens en circulación (${token.symbol})` : 'Tokens en circulación'}
-                    icon={<Coins size={24} />}
-                    loading={loading}
-                />
-                <StatCard
-                    title="Tesorería"
-                    value={parseFloat(stats.treasuryBalance).toLocaleString()}
-                    subtitle={token ? `Tokens recaudados (${token.symbol})` : 'Tokens recaudados'}
-                    icon={<Wallet size={24} />}
-                    loading={loading}
-                />
-                <StatCard
-                    title="Gas (Sepolia ETH)"
-                    value={parseFloat(stats.adminEthBalance).toFixed(4)}
-                    subtitle="Balance para transacciones"
-                    icon={<Fuel size={24} />}
-                    loading={loading}
-                />
-                <StatCard
-                    title="Periodo Inactividad"
-                    value={`${stats.inactivityPeriod} días`}
-                    subtitle="Tiempo límite"
-                    icon={<Clock size={24} />}
-                    loading={loading}
-                />
-                <StatCard
-                    title="Tasa Penalización"
-                    value={`${stats.penaltyRate}%`}
-                    subtitle="Por inactividad"
-                    icon={<AlertTriangle size={24} />}
-                    loading={loading}
-                />
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-6xl mx-auto">
+                {/* Suministro Total Card */}
+                <RainbowCard className="h-full" isDarkMode={isDarkMode}>
+                    <div className={`flex flex-col items-center text-center h-full ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
+                        <div className="relative mb-6">
+                            <div className={`w-24 h-24 rounded-full border-2 border-black flex items-center justify-center ${isDarkMode ? 'bg-gray-800' : 'bg-white'} z-10 relative overflow-hidden`}>
+                                <Image src="/lionlogo-transparent.png" alt="Lion Logo" width={90} height={90} className="object-contain" />
+                            </div>
+                            <div className={`absolute -top-2 -right-12 w-16 h-16 rounded-full border-2 border-black flex items-center justify-center ${isDarkMode ? 'bg-gray-800' : 'bg-white'}`}>
+                                <DollarSign size={32} className="text-green-600" />
+                            </div>
+                        </div>
+
+                        <h2 className="text-3xl font-bold mb-8">Suministro Total</h2>
+
+                        <div className="flex items-center gap-4 mb-8">
+                            <div className={`w-32 h-32 rounded-3xl border-2 border-black flex items-center justify-center p-4 ${isDarkMode ? 'bg-gray-800' : 'bg-white'}`}>
+                                <span className="text-lg font-bold break-all">
+                                    {parseFloat(stats.totalSupply).toLocaleString()}
+                                </span>
+                            </div>
+                            <div className="text-left">
+                                <p className="text-xl font-bold">Tokens</p>
+                                <p className="text-xl font-bold">en circulacion</p>
+                            </div>
+                        </div>
+
+                        <div className="font-bold text-xl mb-4">PRX</div>
+
+                        <div className={`w-full h-48 rounded-3xl border-2 border-black flex items-center justify-center ${isDarkMode ? 'bg-gray-800' : 'bg-gray-50'} mt-auto overflow-hidden`}>
+                            <MiniGraph color="#722F37" />
+                        </div>
+                    </div>
+                </RainbowCard>
+
+                {/* Tesoreria Card */}
+                <RainbowCard className="h-full" isDarkMode={isDarkMode}>
+                    <div className={`flex flex-col items-center text-center h-full ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
+                        <div className="relative mb-6">
+                            <div className={`w-24 h-24 rounded-full border-2 border-black flex items-center justify-center ${isDarkMode ? 'bg-gray-800' : 'bg-white'} z-10 relative overflow-hidden`}>
+                                <Image src="/lionlogo-transparent.png" alt="Lion Logo" width={90} height={90} className="object-contain" />
+                            </div>
+                            <div className={`absolute -top-2 -right-12 w-16 h-16 rounded-full border-2 border-black flex items-center justify-center ${isDarkMode ? 'bg-gray-800' : 'bg-white'}`}>
+                                <Wallet size={32} className="text-blue-600" />
+                            </div>
+                        </div>
+
+                        <h2 className="text-3xl font-bold mb-8">Tesoreria</h2>
+
+                        <div className="flex items-center gap-4 mb-8">
+                            <div className={`w-32 h-32 rounded-3xl border-2 border-black flex items-center justify-center p-4 ${isDarkMode ? 'bg-gray-800' : 'bg-white'}`}>
+                                <span className="text-lg font-bold break-all">
+                                    {parseFloat(stats.treasuryBalance).toLocaleString()}
+                                </span>
+                            </div>
+                            <div className="text-left">
+                                <p className="text-xl font-bold">Tokens</p>
+                                <p className="text-xl font-bold">Recaudados</p>
+                            </div>
+                        </div>
+
+                        <div className="font-bold text-xl mb-4">PRX</div>
+
+                        <div className={`w-full h-48 rounded-3xl border-2 border-black flex items-center justify-center ${isDarkMode ? 'bg-gray-800' : 'bg-gray-50'} mt-auto overflow-hidden`}>
+                            <MiniGraph color="#4ade80" />
+                        </div>
+                    </div>
+                </RainbowCard>
             </div>
         </div>
     )
