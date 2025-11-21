@@ -252,7 +252,7 @@ const CurvedNavbar: React.FC<iCurvedNavbarProps & { footer?: React.ReactNode }> 
                     setIsActive={setIsActive}
                     index={index + 1}
                     isDarkMode={isDarkMode}
-                    isLogout={item.heading === "Log Out"}
+                    isLogout={item.heading === "Cerrar Sesión"}
                   />
                 );
               })}
@@ -319,7 +319,7 @@ const Header: React.FC<iHeaderProps> = ({ isActive, setIsActive }) => {
     },
     {
       heading: "Cerrar Sesión",
-      href: "/logout",
+      href: "#",
       icon: <LogOut size={24} />,
     },
   ];
