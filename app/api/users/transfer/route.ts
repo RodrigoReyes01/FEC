@@ -88,15 +88,13 @@ export async function POST(request: NextRequest) {
             }, { status: 404 })
         }
 
-        // Crear wallet del usuario usando el PROVIDER del admin (que tiene ETH para gas)
-        // El usuario firma la transacción de tokens, pero el admin paga el gas
+        console.log('💸 [TRANSFER] Usuario firma y paga gas (tiene ETH del admin)')
+        
+        // Usuario firma y paga gas (tiene ETH que le dio el admin al crear cuenta)
         const userWallet = new ethers.Wallet(walletData.private_key, adminWallet.provider)
         const userContract = contract.connect(userWallet) as any
-
-        console.log('💸 [TRANSFER] Ejecutando transferencia...')
-        console.log('💸 [TRANSFER] Usuario firma, admin paga gas')
         
-        // Ejecutar transferencia - usuario transfiere tokens, admin paga gas
+        // Ejecutar transferencia
         const tx = await userContract.transfer(toAddress, amountWei)
         console.log('💸 [TRANSFER] TX hash:', tx.hash)
         
@@ -121,6 +119,14 @@ export async function POST(request: NextRequest) {
         })
     } catch (error: any) {
         console.error('Transfer error:', error)
+        
+        // Error específico de falta de gas
+        if (error.code === 'INSUFFICIENT_FUNDS') {
+            return NextResponse.json({ 
+                error: 'Necesitas Sepolia ETH para pagar el gas de la transacción. Contacta al administrador para obtener fondos.' 
+            }, { status: 400 })
+        }
+        
         return NextResponse.json({ 
             error: error.message || 'Error al transferir tokens' 
         }, { status: 500 })

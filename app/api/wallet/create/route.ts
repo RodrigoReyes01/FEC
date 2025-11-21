@@ -60,6 +60,31 @@ export async function POST(request: Request) {
             return NextResponse.json({ error: 'Failed to create wallet' }, { status: 500 })
         }
 
+        // Enviar Sepolia ETH al nuevo usuario para gas
+        try {
+            const { getAdminWallet } = await import('@/lib/adminWallet')
+            const adminWallet = await getAdminWallet()
+            
+            // Enviar 0.002 ETH (suficiente para ~20 transacciones)
+            const ethAmount = ethers.parseEther('0.002')
+            
+            console.log('💰 [WALLET] Enviando Sepolia ETH al nuevo usuario...')
+            console.log('💰 [WALLET] Cantidad:', ethers.formatEther(ethAmount), 'ETH')
+            console.log('💰 [WALLET] Destinatario:', wallet.address)
+            
+            const tx = await adminWallet.sendTransaction({
+                to: wallet.address,
+                value: ethAmount
+            })
+            
+            console.log('💰 [WALLET] TX hash:', tx.hash)
+            await tx.wait()
+            console.log('✅ [WALLET] Sepolia ETH enviado exitosamente')
+        } catch (ethError: any) {
+            console.error('⚠️ [WALLET] Error enviando ETH (no crítico):', ethError.message)
+            // No fallar la creación de wallet si falla el envío de ETH
+        }
+
         return NextResponse.json({
             success: true,
             address: wallet.address
