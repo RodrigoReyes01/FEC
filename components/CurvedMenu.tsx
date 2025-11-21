@@ -300,12 +300,12 @@ const Header: React.FC<iHeaderProps> = ({ isActive, setIsActive }) => {
 
   const navItems: iNavItem[] = [
     {
-      heading: "Home",
+      heading: "Inicio",
       href: "/",
       icon: <User size={24} />,
     },
     {
-      heading: "History",
+      heading: "Historial",
       href: walletAddress
         ? `https://sepolia.etherscan.io/address/${walletAddress}#tokentxns`
         : "/history",
@@ -313,17 +313,12 @@ const Header: React.FC<iHeaderProps> = ({ isActive, setIsActive }) => {
       external: !!walletAddress,
     },
     {
-      heading: "Scan",
-      href: "/scan",
-      icon: <QrCode size={24} />,
-    },
-    {
-      heading: "My QR",
+      heading: "Mi QR",
       href: "/qr",
       icon: <QrCode size={24} />,
     },
     {
-      heading: "Log Out",
+      heading: "Cerrar Sesión",
       href: "/logout",
       icon: <LogOut size={24} />,
     },

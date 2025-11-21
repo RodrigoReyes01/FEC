@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { Bell, ChevronRight, Sun, Moon } from 'lucide-react'
+import { ChevronRight, Sun, Moon } from 'lucide-react'
 import ActionButton from './components/ActionButton'
 import BalanceCard from './components/BalanceCard'
 import LionLogoTransparent from './components/LionLogoTransparent'
@@ -120,9 +120,6 @@ export default function WalletScreen() {
             >
               {isDarkMode ? <Sun size={20} color="white" /> : <Moon size={20} color="white" />}
             </button>
-            <button className="p-2">
-              <Bell size={24} color="white" />
-            </button>
           </div>
         </div>
       </div>
@@ -193,7 +190,7 @@ export default function WalletScreen() {
           className="flex justify-between items-center mx-5 mt-5 p-4 rounded-xl"
         >
           <span className={`text-base font-medium transition-colors ${isDarkMode ? 'text-white' : 'text-gray-800'
-            }`}>View Recent Activity</span>
+            }`}>Ver Actividad Reciente</span>
           <ChevronRight size={20} color="#722F37" />
         </RainbowButton>
       </div>
