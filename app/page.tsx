@@ -29,9 +29,17 @@ export default function WalletScreen() {
     isLoading: true
   })
   const [userProfile, setUserProfile] = useState<any>(null)
+  const [lastFetchTime, setLastFetchTime] = useState<number>(0)
 
   const fetchWalletData = async () => {
     try {
+      // Cache de 30 segundos en el cliente
+      const now = Date.now()
+      if (now - lastFetchTime < 30000) {
+        console.log('⏭️ Usando cache del cliente, no se hace fetch')
+        return
+      }
+
       setWalletData(prev => ({ ...prev, isLoading: true }))
 
       if (!user) {
@@ -68,6 +76,9 @@ export default function WalletScreen() {
         currentPrice: '$0.00',
         isLoading: false
       })
+      
+      // Actualizar timestamp del último fetch exitoso
+      setLastFetchTime(Date.now())
     } catch (error) {
       console.error('Error fetching wallet data:', error)
       setWalletData(prev => ({ ...prev, isLoading: false }))
@@ -75,10 +86,12 @@ export default function WalletScreen() {
   }
 
   useEffect(() => {
-    if (user) {
+    if (user?.id) {
       fetchWalletData()
     }
-  }, [user])
+    // Solo ejecutar cuando cambie el ID del usuario, no el objeto completo
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user?.id])
 
   return (
     <div className={`min-h-screen transition-colors duration-300 ${isDarkMode ? 'bg-gray-900' : 'bg-white'

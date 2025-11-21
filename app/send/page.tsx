@@ -21,6 +21,7 @@ export default function SendPage() {
   const [userProfile, setUserProfile] = useState<any>(null)
   const [tokenSymbol, setTokenSymbol] = useState('TOKENS')
   const [balance, setBalance] = useState('0')
+  const [lastFetchTime, setLastFetchTime] = useState<number>(0)
 
   // Obtener carnet desde URL si viene del QR
   useEffect(() => {
@@ -35,7 +36,14 @@ export default function SendPage() {
   // Obtener perfil del usuario y balance
   useEffect(() => {
     const fetchUserData = async () => {
-      if (!user) return
+      if (!user?.id) return
+      
+      // Cache de 30 segundos
+      const now = Date.now()
+      if (now - lastFetchTime < 30000) {
+        console.log('⏭️ [SEND] Usando cache del cliente')
+        return
+      }
       
       try {
         const [profileRes, tokenRes] = await Promise.all([
@@ -54,13 +62,16 @@ export default function SendPage() {
           const balanceData = await balanceRes.json()
           setBalance(balanceData.balance)
         }
+        
+        setLastFetchTime(Date.now())
       } catch (e) {
         console.error('Error fetching user data:', e)
       }
     }
     
     fetchUserData()
-  }, [user])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user?.id])
 
   const searchByCarnet = async (carnetValue: string) => {
     if (!carnetValue.trim()) {
