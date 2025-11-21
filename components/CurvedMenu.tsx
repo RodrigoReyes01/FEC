@@ -318,6 +318,11 @@ const Header: React.FC<iHeaderProps> = ({ isActive, setIsActive }) => {
       icon: <QrCode size={24} />,
     },
     {
+      heading: "My QR",
+      href: "/qr",
+      icon: <QrCode size={24} />,
+    },
+    {
       heading: "Log Out",
       href: "/logout",
       icon: <LogOut size={24} />,

@@ -76,7 +76,7 @@ export default function WalletScreen() {
         currentPrice: '$0.00',
         isLoading: false
       })
-      
+
       // Actualizar timestamp del último fetch exitoso
       setLastFetchTime(Date.now())
     } catch (error) {
@@ -152,7 +152,7 @@ export default function WalletScreen() {
           <ActionButton
             icon="arrow-down"
             label="Recibir"
-            onClick={() => router.push('/receive')}
+            onClick={() => router.push('/qr')}
             isDarkMode={isDarkMode}
           />
           <ActionButton

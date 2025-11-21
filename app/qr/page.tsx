@@ -19,12 +19,12 @@ export default function QRPage() {
   useEffect(() => {
     const fetchProfile = async () => {
       if (!user) return
-      
+
       try {
         const res = await fetch(`/api/users/profile?userId=${user.id}`)
         const profile = await res.json()
         setUserProfile(profile)
-        
+
         // Generar QR con el carnet
         if (profile.universityId) {
           const qr = await QRCode.toDataURL(profile.universityId, {
@@ -41,7 +41,7 @@ export default function QRPage() {
         console.error('Error fetching profile:', e)
       }
     }
-    
+
     fetchProfile()
   }, [user])
 
@@ -150,17 +150,15 @@ export default function QRPage() {
 
       {/* QR Card */}
       <div className="relative z-10 min-h-[calc(100vh-80px)] flex items-center justify-center p-4">
-        <div className={`rainbow-glow-border-thick w-full max-w-sm ${
-          isDarkMode 
-            ? 'bg-gray-900/95 border-gray-700/20' 
+        <div className={`rainbow-glow-border-thick w-full max-w-sm ${isDarkMode
+            ? 'bg-gray-900/95 border-gray-700/20'
             : 'bg-white/95 border-white/20'
-        } backdrop-blur-sm rounded-3xl shadow-2xl p-6 border transition-all duration-300`}>
-          
+          } backdrop-blur-sm rounded-3xl shadow-2xl p-6 border transition-all duration-300`}>
+
           {/* University ID Label */}
           <div className="absolute -left-10 top-1/2 -translate-y-1/2 -rotate-90 origin-center whitespace-nowrap">
-            <p className={`text-lg font-medium tracking-[0.5em] ${
-              isDarkMode ? 'text-gray-700' : 'text-gray-400'
-            }`}>
+            <p className={`text-lg font-medium tracking-[0.5em] ${isDarkMode ? 'text-gray-700' : 'text-gray-400'
+              }`}>
               {userProfile?.universityId || 'CARNET'}
             </p>
           </div>
@@ -171,16 +169,14 @@ export default function QRPage() {
           </div>
 
           {/* User Name */}
-          <h1 className={`text-2xl font-bold text-center mb-1 transition-colors duration-300 ${
-            isDarkMode ? 'text-white' : 'text-gray-900'
-          }`}>
+          <h1 className={`text-2xl font-bold text-center mb-1 transition-colors duration-300 ${isDarkMode ? 'text-white' : 'text-gray-900'
+            }`}>
             {userProfile?.firstName} {userProfile?.lastName}
           </h1>
 
           {/* Carnet */}
-          <p className={`text-base text-center mb-4 transition-colors duration-300 ${
-            isDarkMode ? 'text-gray-400' : 'text-gray-600'
-          }`}>
+          <p className={`text-base text-center mb-4 transition-colors duration-300 ${isDarkMode ? 'text-gray-400' : 'text-gray-600'
+            }`}>
             Carnet: {userProfile?.universityId}
           </p>
 
@@ -189,12 +185,10 @@ export default function QRPage() {
             {qrCode ? (
               <img src={qrCode} alt="QR Code" className="w-48 h-48 rounded-2xl" />
             ) : (
-              <div className={`w-48 h-48 rounded-2xl flex items-center justify-center transition-colors duration-300 ${
-                isDarkMode ? 'bg-gray-800 border-gray-700' : 'bg-gray-100 border-gray-200'
-              } border-2`}>
-                <p className={`text-base transition-colors duration-300 ${
-                  isDarkMode ? 'text-gray-500' : 'text-gray-400'
-                }`}>
+              <div className={`w-48 h-48 rounded-2xl flex items-center justify-center transition-colors duration-300 ${isDarkMode ? 'bg-gray-800 border-gray-700' : 'bg-gray-100 border-gray-200'
+                } border-2`}>
+                <p className={`text-base transition-colors duration-300 ${isDarkMode ? 'text-gray-500' : 'text-gray-400'
+                  }`}>
                   Cargando QR...
                 </p>
               </div>
@@ -202,23 +196,20 @@ export default function QRPage() {
           </div>
 
           {/* Carnet para copiar */}
-          <div className={`flex items-center justify-center gap-2 transition-colors duration-300 ${
-            isDarkMode ? 'text-white' : 'text-gray-900'
-          }`}>
-            <p className={`text-sm font-mono transition-colors duration-300 ${
-              isDarkMode ? 'text-white' : 'text-gray-900'
+          <div className={`flex items-center justify-center gap-2 transition-colors duration-300 ${isDarkMode ? 'text-white' : 'text-gray-900'
             }`}>
+            <p className={`text-sm font-mono transition-colors duration-300 ${isDarkMode ? 'text-white' : 'text-gray-900'
+              }`}>
               {userProfile?.universityId || 'Sin carnet'}
             </p>
             <button
               onClick={handleCopyCarnet}
-              className={`p-1.5 rounded-lg transition-colors ${
-                copied 
-                  ? 'bg-university-red text-white' 
-                  : isDarkMode 
-                    ? 'text-gray-400 hover:text-gray-200' 
+              className={`p-1.5 rounded-lg transition-colors ${copied
+                  ? 'bg-university-red text-white'
+                  : isDarkMode
+                    ? 'text-gray-400 hover:text-gray-200'
                     : 'text-gray-600 hover:text-gray-900'
-              }`}
+                }`}
             >
               <Copy size={16} />
             </button>
@@ -226,25 +217,11 @@ export default function QRPage() {
         </div>
       </div>
 
-      {/* Add to Apple Wallet Button */}
-      <div className="relative z-10 flex justify-center px-4 -mt-20 pb-8">
-        <button
-          onClick={() => console.log('Add to Apple Wallet')}
-          className="px-8 py-3 rounded-xl font-semibold transition-colors flex items-center gap-2 bg-black text-white hover:bg-gray-900"
-        >
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
-            <path d="M17.05 20.28c-.98.95-2.05.8-3.08.35-1.09-.46-2.09-.48-3.24 0-1.44.62-2.2.44-3.06-.35C2.79 15.25 3.51 7.59 9.05 7.31c1.35.07 2.29.74 3.08.8 1.18-.24 2.31-.93 3.57-.84 1.51.12 2.65.72 3.4 1.8-3.12 1.87-2.38 5.98.48 7.13-.57 1.5-1.31 2.99-2.54 4.09l.01-.01zM12.03 7.25c-.15-2.23 1.66-4.07 3.74-4.25.29 2.58-2.34 4.5-3.74 4.25z"/>
-          </svg>
-          Add to Apple Wallet
-        </button>
-      </div>
-
       {/* Copy Notification */}
       {copied && (
         <div className="fixed bottom-8 left-1/2 -translate-x-1/2 z-50 animate-fade-in">
-          <div className={`px-6 py-3 rounded-full shadow-lg ${
-            isDarkMode ? 'bg-gray-800 text-white' : 'bg-white text-gray-900'
-          } border-2 border-university-red`}>
+          <div className={`px-6 py-3 rounded-full shadow-lg ${isDarkMode ? 'bg-gray-800 text-white' : 'bg-white text-gray-900'
+            } border-2 border-university-red`}>
             <p className="text-sm font-medium">Wallet address copied to clipboard</p>
           </div>
         </div>
