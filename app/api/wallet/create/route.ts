@@ -44,13 +44,13 @@ export async function POST(request: Request) {
         const wallet = ethers.Wallet.createRandom()
 
         // Store wallet in database
+        // Nota: balance se obtiene del blockchain, no se guarda en DB
         const { data: newWallet, error: walletError } = await supabase
             .from('wallets')
             .insert({
                 user_id: user.id,
                 address: wallet.address,
-                private_key: wallet.privateKey,
-                balance: 0
+                private_key: wallet.privateKey
             })
             .select()
             .single()
