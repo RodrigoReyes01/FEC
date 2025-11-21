@@ -10,12 +10,14 @@ import LionLogoTransparent from './components/LionLogoTransparent'
 import RainbowButton from './components/RainbowButton'
 import Header, { MenuButton } from '../components/CurvedMenu'
 import { useTheme } from '../contexts/ThemeContext'
+import { useAuth } from '../contexts/AuthContext'
 
 export default function WalletScreen() {
   const router = useRouter()
+  const { user } = useAuth()
   const { isDarkMode, toggleDarkMode } = useTheme()
   const [isMenuActive, setIsMenuActive] = useState(false)
-  
+
   // Estado para datos de la billetera - listo para conectar con backend
   const [walletData, setWalletData] = useState({
     balance: '0.0000',
@@ -31,16 +33,16 @@ export default function WalletScreen() {
   const fetchWalletData = async () => {
     try {
       setWalletData(prev => ({ ...prev, isLoading: true }))
-      
+
       // Por ahora usar datos de ejemplo hasta conectar el backend real
       // TODO: Descomentar cuando tengas el backend listo
       // const walletAddress = 'USER_WALLET_ADDRESS';
       // const data = await getWalletBalance(walletAddress);
       // setWalletData(data);
-      
+
       // Simular delay de red
       await new Promise(resolve => setTimeout(resolve, 1000))
-      
+
       // Datos de ejemplo
       const mockData = {
         balance: '2.4856',
@@ -51,7 +53,7 @@ export default function WalletScreen() {
         currentPrice: '$44,567.23',
         isLoading: false
       }
-      
+
       setWalletData(mockData)
     } catch (error) {
       console.error('Error fetching wallet data:', error)
@@ -65,20 +67,19 @@ export default function WalletScreen() {
   }, [])
 
   return (
-    <div className={`min-h-screen transition-colors duration-300 ${
-      isDarkMode ? 'bg-gray-900' : 'bg-white'
-    }`}>
+    <div className={`min-h-screen transition-colors duration-300 ${isDarkMode ? 'bg-gray-900' : 'bg-white'
+      }`}>
       {/* Curved Menu */}
-      <Header 
+      <Header
         isActive={isMenuActive}
         setIsActive={setIsMenuActive}
       />
-      
+
       {/* Header */}
       <div className="bg-university-red px-5 py-4">
         <div className="flex items-center">
           <div className="flex-1 flex justify-start">
-            <MenuButton 
+            <MenuButton
               isActive={isMenuActive}
               onClick={() => setIsMenuActive(!isMenuActive)}
             />
@@ -87,7 +88,7 @@ export default function WalletScreen() {
             <LionLogoTransparent size={40} />
           </div>
           <div className="flex-1 flex justify-end items-center space-x-2">
-            <button 
+            <button
               className="p-2 rounded-full bg-white/10 backdrop-blur-sm hover:bg-white/20 transition-colors"
               onClick={toggleDarkMode}
             >
@@ -101,39 +102,48 @@ export default function WalletScreen() {
       </div>
 
       {/* Main Content */}
-      <div className={`pb-8 transition-colors duration-300 ${
-        isDarkMode ? 'bg-gray-900' : 'bg-white'
-      }`}>
+      <div className={`pb-8 transition-colors duration-300 ${isDarkMode ? 'bg-gray-900' : 'bg-white'
+        }`}>
+        {/* Welcome Section */}
+        <div className="px-5 pt-6 pb-2">
+          <h1 className={`text-2xl font-bold ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
+            Hola, {user?.user_metadata?.first_name || 'Estudiante'} {user?.user_metadata?.last_name || ''}
+          </h1>
+          <p className={`text-sm font-medium mt-1 ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+            Carnet: {user?.user_metadata?.university_id || '----'}
+          </p>
+        </div>
+
         {/* Action Buttons */}
         <div className="flex justify-around px-5 py-5">
-          <ActionButton 
-            icon="arrow-up" 
-            label="Send" 
+          <ActionButton
+            icon="arrow-up"
+            label="Send"
             onClick={() => router.push('/send')}
             isDarkMode={isDarkMode}
           />
-          <ActionButton 
-            icon="arrow-down" 
-            label="Receive" 
+          <ActionButton
+            icon="arrow-down"
+            label="Receive"
             onClick={() => router.push('/receive')}
             isDarkMode={isDarkMode}
           />
-          <ActionButton 
-            icon="shopping-cart" 
-            label="Buy" 
+          <ActionButton
+            icon="shopping-cart"
+            label="Buy"
             onClick={() => console.log('Buy')}
             isDarkMode={isDarkMode}
           />
-          <ActionButton 
-            icon="qr-code" 
-            label="Scan" 
+          <ActionButton
+            icon="qr-code"
+            label="Scan"
             onClick={() => router.push('/scan')}
             isDarkMode={isDarkMode}
           />
         </div>
 
         {/* Balance Card */}
-        <BalanceCard 
+        <BalanceCard
           balance={walletData.balance}
           usdValue={walletData.usdValue}
           change={walletData.change}
@@ -146,7 +156,7 @@ export default function WalletScreen() {
         />
 
         {/* Price Chart */}
-        <PriceChart 
+        <PriceChart
           currentPrice={walletData.currentPrice}
           isLoading={walletData.isLoading}
           isDarkMode={isDarkMode}
@@ -158,9 +168,8 @@ export default function WalletScreen() {
           isDarkMode={isDarkMode}
           className="flex justify-between items-center mx-5 mt-5 p-4 rounded-xl"
         >
-          <span className={`text-base font-medium transition-colors ${
-            isDarkMode ? 'text-white' : 'text-gray-800'
-          }`}>View Recent Activity</span>
+          <span className={`text-base font-medium transition-colors ${isDarkMode ? 'text-white' : 'text-gray-800'
+            }`}>View Recent Activity</span>
           <ChevronRight size={20} color="#722F37" />
         </RainbowButton>
       </div>
