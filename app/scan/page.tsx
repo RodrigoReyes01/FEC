@@ -5,44 +5,78 @@ import { useRouter } from 'next/navigation'
 import { ArrowLeft, Sun, Moon } from 'lucide-react'
 import LionLogoTransparent from '../components/LionLogoTransparent'
 import { useTheme } from '../../contexts/ThemeContext'
+import jsQR from 'jsqr'
 
 export default function ScanPage() {
   const router = useRouter()
   const { isDarkMode, toggleDarkMode } = useTheme()
   const videoRef = useRef<HTMLVideoElement>(null)
+  const canvasRef = useRef<HTMLCanvasElement>(null)
   const [hasPermission, setHasPermission] = useState<boolean | null>(null)
   const [error, setError] = useState<string>('')
   const [isLoading, setIsLoading] = useState(true)
+  const requestRef = useRef<number>()
 
   useEffect(() => {
     // Add a small delay to ensure component is mounted
     const timer = setTimeout(() => {
       startCamera()
     }, 100)
-    
+
     return () => {
       clearTimeout(timer)
       stopCamera()
+      if (requestRef.current) {
+        cancelAnimationFrame(requestRef.current)
+      }
     }
   }, [])
+
+  const scan = () => {
+    if (videoRef.current && canvasRef.current && videoRef.current.readyState === videoRef.current.HAVE_ENOUGH_DATA) {
+      const canvas = canvasRef.current
+      const video = videoRef.current
+      const ctx = canvas.getContext('2d')
+
+      if (ctx) {
+        canvas.height = video.videoHeight
+        canvas.width = video.videoWidth
+        ctx.drawImage(video, 0, 0, canvas.width, canvas.height)
+
+        const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height)
+        const code = jsQR(imageData.data, imageData.width, imageData.height, {
+          inversionAttempts: 'dontInvert',
+        })
+
+        if (code) {
+          console.log('QR Code found:', code.data)
+          // Stop scanning and redirect
+          stopCamera()
+          router.push(`/send?carnet=${encodeURIComponent(code.data)}`)
+          return
+        }
+      }
+    }
+    requestRef.current = requestAnimationFrame(scan)
+  }
 
   const startCamera = async () => {
     try {
       setIsLoading(true)
       console.log('Starting camera...')
-      
+
       // Check if mediaDevices is supported
       if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
         throw new Error('Camera not supported on this device')
       }
 
       console.log('Requesting camera permission...')
-      
+
       // Try rear camera first (for mobile devices)
       let stream
       try {
         stream = await navigator.mediaDevices.getUserMedia({
-          video: { 
+          video: {
             facingMode: { ideal: 'environment' },
             width: { ideal: 1280 },
             height: { ideal: 720 }
@@ -60,17 +94,19 @@ export default function ScanPage() {
         })
         console.log('Front camera stream obtained')
       }
-      
+
       if (videoRef.current && stream) {
         console.log('Setting video source...')
         videoRef.current.srcObject = stream
-        
+
         // Try to play immediately
         try {
           await videoRef.current.play()
           console.log('Video playing successfully')
           setHasPermission(true)
           setIsLoading(false)
+          // Start scanning loop
+          requestRef.current = requestAnimationFrame(scan)
         } catch (playErr) {
           console.error('Error playing video:', playErr)
           setHasPermission(false)
@@ -84,7 +120,7 @@ export default function ScanPage() {
       console.error('Error accessing camera:', err)
       setHasPermission(false)
       setIsLoading(false)
-      
+
       // Provide more specific error messages
       if (err.name === 'NotAllowedError' || err.name === 'PermissionDeniedError') {
         setError('Camera permission denied. Please allow camera access in your browser settings.')
@@ -111,17 +147,9 @@ export default function ScanPage() {
     router.push('/send')
   }
 
-  // Simulate QR code scan (in production, use a QR code library like jsQR)
-  const handleTestScan = () => {
-    const mockCarnet = '20200090'
-    stopCamera()
-    router.push(`/send?carnet=${encodeURIComponent(mockCarnet)}`)
-  }
-
   return (
-    <div className={`min-h-screen transition-colors duration-300 ${
-      isDarkMode ? 'bg-gray-900' : 'bg-white'
-    }`}>
+    <div className={`min-h-screen transition-colors duration-300 ${isDarkMode ? 'bg-gray-900' : 'bg-white'
+      }`}>
       {/* Header */}
       <div className="bg-university-red px-5 py-4">
         <div className="flex justify-between items-center">
@@ -146,11 +174,12 @@ export default function ScanPage() {
         {/* Hidden video element - always rendered so ref is available */}
         <video
           ref={videoRef}
-          autoPlay
           playsInline
           muted
           className="hidden"
         />
+        {/* Hidden canvas for processing */}
+        <canvas ref={canvasRef} className="hidden" />
 
         {(hasPermission === null || isLoading) && (
           <div className={`text-center ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
@@ -191,35 +220,32 @@ export default function ScanPage() {
                   }
                 }}
               />
-              
+
               {/* Scan Frame Overlay */}
               <div className="absolute inset-0 flex items-center justify-center">
-                <div className="w-64 h-64 border-4 border-university-red rounded-2xl"></div>
+                <div className="w-64 h-64 border-4 border-university-red rounded-2xl relative">
+                  <div className="absolute top-0 left-0 w-4 h-4 border-t-4 border-l-4 border-white -mt-1 -ml-1"></div>
+                  <div className="absolute top-0 right-0 w-4 h-4 border-t-4 border-r-4 border-white -mt-1 -mr-1"></div>
+                  <div className="absolute bottom-0 left-0 w-4 h-4 border-b-4 border-l-4 border-white -mb-1 -ml-1"></div>
+                  <div className="absolute bottom-0 right-0 w-4 h-4 border-b-4 border-r-4 border-white -mb-1 -mr-1"></div>
+                </div>
               </div>
             </div>
 
             {/* Instructions */}
-            <p className={`text-center text-lg mb-6 ${
-              isDarkMode ? 'text-white' : 'text-gray-900'
-            }`}>
+            <p className={`text-center text-lg mb-6 ${isDarkMode ? 'text-white' : 'text-gray-900'
+              }`}>
               Position QR code within the frame
             </p>
 
             {/* Action Buttons */}
             <div className="space-y-3">
               <button
-                onClick={handleTestScan}
-                className="w-full px-6 py-3 bg-university-red text-white rounded-xl font-semibold hover:bg-university-red-light transition-colors"
-              >
-                Test Scan (Demo)
-              </button>
-              <button
                 onClick={handleManualInput}
-                className={`w-full px-6 py-3 rounded-xl font-semibold transition-colors ${
-                  isDarkMode
+                className={`w-full px-6 py-3 rounded-xl font-semibold transition-colors ${isDarkMode
                     ? 'bg-gray-800 text-white hover:bg-gray-700'
                     : 'bg-gray-200 text-gray-900 hover:bg-gray-300'
-                }`}
+                  }`}
               >
                 Enter Address Manually
               </button>

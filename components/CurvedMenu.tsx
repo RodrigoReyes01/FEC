@@ -7,12 +7,14 @@ import { useRouter } from "next/navigation";
 import { User, History, QrCode, LogOut } from "lucide-react";
 import { useTheme } from "../contexts/ThemeContext";
 import { useAuth } from "../contexts/AuthContext";
+import { useWallet } from "../contexts/WalletContext";
 
 interface iNavItem {
   heading: string;
   href: string;
   subheading?: string;
   icon?: React.ReactNode;
+  external?: boolean;
 }
 
 interface iNavLinkProps extends iNavItem {
@@ -37,50 +39,23 @@ interface iHeaderProps {
 
 const MENU_SLIDE_ANIMATION = {
   initial: { x: "-100%" },
-  enter: { 
-    x: "0", 
-    transition: { 
-      duration: 0.6, 
+  enter: {
+    x: "0",
+    transition: {
+      duration: 0.6,
       ease: [0.25, 0.46, 0.45, 0.94] as [number, number, number, number],
       type: "tween" as const
-    } 
+    }
   },
   exit: {
     x: "-100%",
-    transition: { 
-      duration: 0.5, 
+    transition: {
+      duration: 0.5,
       ease: [0.55, 0.06, 0.68, 0.19] as [number, number, number, number],
       type: "tween" as const
     },
   },
 };
-
-const defaultNavItems: iNavItem[] = [
-  {
-    heading: "Profile",
-    href: "/profile",
-    subheading: "View and edit your profile",
-    icon: <User size={20} />,
-  },
-  {
-    heading: "History",
-    href: "/history",
-    subheading: "Transaction history",
-    icon: <History size={20} />,
-  },
-  {
-    heading: "My QR",
-    href: "/qr",
-    subheading: "Your QR code",
-    icon: <QrCode size={20} />,
-  },
-  {
-    heading: "Log Out",
-    href: "/login",
-    subheading: "Sign out of your account",
-    icon: <LogOut size={20} />,
-  },
-];
 
 const CustomFooter: React.FC<{ isDarkMode: boolean }> = ({ isDarkMode }) => {
   return (
@@ -102,6 +77,7 @@ const NavLink: React.FC<iNavLinkProps> = ({
   subheading,
   isDarkMode,
   isLogout,
+  external,
 }) => {
   const ref = useRef<HTMLAnchorElement | null>(null);
   const router = useRouter();
@@ -133,7 +109,14 @@ const NavLink: React.FC<iNavLinkProps> = ({
       whileHover="whileHover"
       className="group relative flex items-center justify-between border-b border-university-red/30 py-4 transition-colors duration-500 md:py-6 uppercase"
     >
-      <Link ref={ref} onMouseMove={handleMouseMove} href={href} className="w-full">
+      <Link
+        ref={ref}
+        onMouseMove={handleMouseMove}
+        href={href}
+        className="w-full"
+        target={external ? "_blank" : undefined}
+        rel={external ? "noopener noreferrer" : undefined}
+      >
         <div className="relative flex items-center justify-between">
           <div className="flex items-center">
             <span className="text-university-red transition-colors duration-500 text-2xl font-thin mr-4">
@@ -152,9 +135,8 @@ const NavLink: React.FC<iNavLinkProps> = ({
                     staggerChildren: 0.075,
                     delayChildren: 0.25,
                   }}
-                  className={`relative z-10 block text-2xl font-medium transition-colors duration-500 md:text-3xl ${
-                    isDarkMode ? 'text-white' : 'text-gray-900'
-                  }`}
+                  className={`relative z-10 block text-2xl font-medium transition-colors duration-500 md:text-3xl ${isDarkMode ? 'text-white' : 'text-gray-900'
+                    }`}
                 >
                   {heading.split("").map((letter, i) => {
                     return (
@@ -173,9 +155,8 @@ const NavLink: React.FC<iNavLinkProps> = ({
                   })}
                 </motion.span>
                 {subheading && (
-                  <span className={`text-sm normal-case ${
-                    isDarkMode ? 'text-gray-400' : 'text-gray-600'
-                  }`}>
+                  <span className={`text-sm normal-case ${isDarkMode ? 'text-gray-400' : 'text-gray-600'
+                    }`}>
                     {subheading}
                   </span>
                 )}
@@ -198,16 +179,16 @@ const Curve: React.FC<{ isDarkMode: boolean }> = ({ isDarkMode }) => {
     initial: { d: initialPath },
     enter: {
       d: targetPath,
-      transition: { 
-        duration: 0.7, 
+      transition: {
+        duration: 0.7,
         ease: [0.25, 0.46, 0.45, 0.94] as [number, number, number, number],
         delay: 0.1
       },
     },
     exit: {
       d: initialPath,
-      transition: { 
-        duration: 0.6, 
+      transition: {
+        duration: 0.6,
         ease: [0.55, 0.06, 0.68, 0.19] as [number, number, number, number]
       },
     },
@@ -242,9 +223,8 @@ const CurvedNavbar: React.FC<iCurvedNavbarProps & { footer?: React.ReactNode }> 
       initial="initial"
       animate="enter"
       exit="exit"
-      className={`h-[100dvh] w-screen max-w-screen-sm fixed left-0 top-0 z-40 overflow-hidden ${
-        isDarkMode ? 'bg-gray-900' : 'bg-white'
-      }`}
+      className={`h-[100dvh] w-screen max-w-screen-sm fixed left-0 top-0 z-40 overflow-hidden ${isDarkMode ? 'bg-gray-900' : 'bg-white'
+        }`}
     >
       {/* Close Button - positioned at header height */}
       <button
@@ -298,42 +278,61 @@ export const MenuButton: React.FC<{
     >
       <div className="relative w-6 h-5 flex flex-col justify-between items-center">
         <span
-          className={`block h-0.5 w-6 bg-white transition-transform duration-300 ${
-            isActive ? "rotate-45 translate-y-2" : ""
-          }`}
+          className={`block h-0.5 w-6 bg-white transition-transform duration-300 ${isActive ? "rotate-45 translate-y-2" : ""
+            }`}
         ></span>
         <span
-          className={`block h-0.5 w-6 bg-white transition-opacity duration-300 ${
-            isActive ? "opacity-0" : ""
-          }`}
+          className={`block h-0.5 w-6 bg-white transition-opacity duration-300 ${isActive ? "opacity-0" : ""
+            }`}
         ></span>
         <span
-          className={`block h-0.5 w-6 bg-white transition-transform duration-300 ${
-            isActive ? "-rotate-45 -translate-y-2" : ""
-          }`}
+          className={`block h-0.5 w-6 bg-white transition-transform duration-300 ${isActive ? "-rotate-45 -translate-y-2" : ""
+            }`}
         ></span>
       </div>
     </button>
   );
 };
 
-const Header: React.FC<iHeaderProps> = ({
-  navItems = defaultNavItems,
-  footer,
-  isActive = false,
-  setIsActive,
-}) => {
+const Header: React.FC<iHeaderProps> = ({ isActive, setIsActive }) => {
   const { isDarkMode } = useTheme();
+  const { walletAddress } = useWallet();
+
+  const navItems: iNavItem[] = [
+    {
+      heading: "Home",
+      href: "/",
+      icon: <User size={24} />,
+    },
+    {
+      heading: "History",
+      href: walletAddress
+        ? `https://sepolia.etherscan.io/address/${walletAddress}`
+        : "/history",
+      icon: <History size={24} />,
+      external: !!walletAddress,
+    },
+    {
+      heading: "Scan",
+      href: "/scan",
+      icon: <QrCode size={24} />,
+    },
+    {
+      heading: "Log Out",
+      href: "/logout",
+      icon: <LogOut size={24} />,
+    },
+  ];
 
   return (
     <>
       <AnimatePresence mode="wait">
         {isActive && (
           <CurvedNavbar
-            setIsActive={setIsActive || (() => {})}
+            setIsActive={setIsActive!}
             navItems={navItems}
-            footer={footer || <CustomFooter isDarkMode={isDarkMode} />}
             isDarkMode={isDarkMode}
+            footer={<CustomFooter isDarkMode={isDarkMode} />}
           />
         )}
       </AnimatePresence>
