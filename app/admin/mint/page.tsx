@@ -49,6 +49,7 @@ export default function MintPage() {
         setTxHash('')
 
         try {
+            console.log('[MINT PAGE] Sending mint request for amount:', amount)
             const response = await fetch('/api/admin/mint', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -56,16 +57,39 @@ export default function MintPage() {
             })
 
             const data = await response.json()
+            console.log('[MINT PAGE] Mint response:', data)
 
             if (!response.ok) {
                 throw new Error(data.error || 'Error al acuñar tokens')
             }
 
+            console.log('[MINT PAGE] Mint successful!')
+            console.log('[MINT PAGE] Transaction hash:', data.txHash)
+            console.log('[MINT PAGE] Minted to treasury?', data.mintedToTreasury)
+            console.log('[MINT PAGE] Treasury address:', data.treasuryAddress)
+            console.log('[MINT PAGE] Amount minted:', data.amount)
+            console.log('[MINT PAGE] Block number:', data.blockNumber)
+
             setTxHash(data.txHash)
             setStatus('success')
             setAmount('')
+
+            // Refresh current supply after successful mint
+            console.log('[MINT PAGE] Refreshing supply data...')
+            setTimeout(async () => {
+                try {
+                    const statsRes = await fetch('/api/admin/stats')
+                    const stats = await statsRes.json()
+                    if (statsRes.ok) {
+                        console.log('[MINT PAGE] Updated supply:', stats.totalSupply)
+                        setCurrentSupply(stats.totalSupply || '0')
+                    }
+                } catch (e) {
+                    console.error('[MINT PAGE] Error refreshing stats:', e)
+                }
+            }, 2000) // Wait 2 seconds for cache to clear
         } catch (error: any) {
-            console.error('Mint error:', error)
+            console.error('[MINT PAGE] Mint error:', error)
             setStatus('error')
             setErrorMessage(error.message || 'Error al acuñar tokens')
         }
